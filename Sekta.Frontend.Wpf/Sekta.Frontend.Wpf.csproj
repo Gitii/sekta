@@ -1,0 +1,85 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject>Sekta.Frontend.Wpf.App</StartupObject>
+    <LangVersion>latest</LangVersion>
+    <ApplicationIcon>policy.ico</ApplicationIcon>
+    <Description>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a></Description>
+    <PackageIcon>policy.png</PackageIcon>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <Copyright>Copyright (c) 2020 Lumenii</Copyright>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <Authors>Lumenii</Authors>
+    <Product>Sekta</Product>
+    <PackageProjectUrl>https://bitbucket.org/Lumenii/sekta/</PackageProjectUrl>
+    <RepositoryUrl>https://bitbucket.org/Lumenii/sekta/</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="4.6.82" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
+    <PackageReference Include="ReactiveUI.Events.WPF" Version="11.5.26" />
+    <PackageReference Include="ReactiveUI.WPF" Version="11.5.26" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sekta.Core\Sekta.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Windows\OMAViewer.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Presentation\ListboxPresentationView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Presentation\TextPresentationView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Presentation\TextboxPresentationView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Presentation\DecimalTextboxPresentationView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Presentation\DropdownPresentationView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Windows\OMAViewer.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Presentation\ListboxPresentationView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Presentation\TextPresentationView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Presentation\TextboxPresentationView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Presentation\DecimalTextboxPresentationView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Presentation\DropdownPresentationView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="policy.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </Resource>
+    <None Include="LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

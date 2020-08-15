@@ -1,0 +1,171 @@
+﻿<reactiveUi:ReactiveWindow
+    x:Class="Sekta.Frontend.Wpf.Windows.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Sekta.Frontend.Wpf"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:modelView="clr-namespace:Sekta.Core.ModelView;assembly=Sekta.Core"
+    xmlns:reactiveUi="http://reactiveui.net"
+    xmlns:schema="clr-namespace:Sekta.Core.Schema;assembly=Sekta.Core"
+    xmlns:schema1="clr-namespace:Sekta.Admx.Schema;assembly=Sekta.Admx.Schema"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    xmlns:controls="clr-namespace:Sekta.Frontend.Wpf.Controls"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="Sekta - Admx/Adml Viewer"
+    Width="900"
+    Height="450"
+    x:TypeArguments="modelView:AppViewModel"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <local:LocalizedStringConverter x:Key="LocalizedStringConverter" />
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="_File">
+                <MenuItem Click="AdmxAdmlContextButton_OnClick" Header="_Open" />
+                <Separator />
+                <MenuItem x:Name="ExitMenuItem" Header="_Exit" />
+            </MenuItem>
+            <MenuItem
+                x:Name="LanguageMenuItem"
+                Click="LanguageMenuItem_OnClick"
+                Header="_Language">
+                <MenuItem.ItemTemplate>
+                    <DataTemplate DataType="schema1:PolicyDefinitionResources">
+                        <TextBlock Tag="{Binding}" Text="{Binding CultureEnglishName}" />
+                    </DataTemplate>
+                </MenuItem.ItemTemplate>
+            </MenuItem>
+            <MenuItem Header="_Configuration">
+                <MenuItem x:Name="LoadConfigButton" Header="_Load" />
+                <MenuItem x:Name="SaveConfigButton" Header="_Save" />
+                <Separator />
+                <MenuItem Header="_Export as">
+                    <MenuItem x:Name="ExportConfigButton" Header="As Powershell-Skript (*.ps1)" />
+                    <MenuItem
+                        x:Name="ExportToIntuneButton"
+                        Click="ExportToIntune_OnClick"
+                        Header="As Intune-Configuration" />
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Click="About_OnClick" Header="_About" />
+        </Menu>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="300" />
+            </Grid.ColumnDefinitions>
+            <Grid
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="5"
+                Margin="50,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <xctk:WatermarkTextBox
+                    x:Name="SearchBox"
+                    Grid.Column="0"
+                    Margin="0,0,4,0"
+                    HorizontalAlignment="Stretch"
+                    Watermark="Search for gpo, key or path" />
+                <Button
+                    x:Name="ClearSearch"
+                    Grid.Column="1"
+                    Content="Clear search" />
+            </Grid>
+            <TreeView
+                x:Name="Categories"
+                Grid.Row="1"
+                Grid.Column="0">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType="schema:AdmxCategory" ItemsSource="{Binding Children}">
+                        <TextBlock Text="{Binding Name, Converter={StaticResource LocalizedStringConverter}}" />
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            <GridSplitter
+                Grid.Row="1"
+                Grid.Column="1"
+                HorizontalAlignment="Stretch" />
+            <ListBox
+                x:Name="Policies"
+                Grid.Row="1"
+                Grid.Column="2">
+                <ListBox.GroupStyle>
+                    <GroupStyle HidesIfEmpty="True">
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,4,4,2" Orientation="Horizontal">
+                                    <TextBlock FontWeight="Bold" Text="{Binding Name.Name, Converter={StaticResource LocalizedStringConverter}}" />
+                                    <ItemsControl
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center"
+                                        ItemsSource="{Binding Name.PathElements}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="9"
+                                                    Text="{Binding ., Converter={StaticResource LocalizedStringConverter}}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListBox.GroupStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="schema:AdmxPolicy">
+                        <TextBlock Text="{Binding DisplayName, Converter={StaticResource LocalizedStringConverter}}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <GridSplitter
+                Grid.Row="1"
+                Grid.Column="3"
+                HorizontalAlignment="Stretch" />
+            <Border
+                Grid.Row="1"
+                Grid.Column="4"
+                BorderBrush="DarkGray"
+                BorderThickness="1">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8" Orientation="Vertical">
+                        <controls:SelectableTextBlock
+                            x:Name="PolicyKeyTextBlock"
+                            HorizontalAlignment="Stretch"
+                            FontSize="10"
+                            Foreground="DarkGray"
+                            TextWrapping="Wrap" />
+                        <controls:SelectableTextBlock
+                            x:Name="PolicyExplainTextBlock"
+                            HorizontalAlignment="Stretch"
+                            TextWrapping="Wrap" />
+                        <reactiveUi:ViewModelViewHost x:Name="PolicyConfigurationPresenter" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</reactiveUi:ReactiveWindow>
