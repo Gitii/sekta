@@ -1,6 +1,0 @@
-MainPackage=E:\Visual Studio Projects\Sekta\Sekta.Installer.Msix\bin\AnyCPU\Debug\Sekta.Installer.Msix_1.1.0.0_AnyCPU_Debug.appx
-SymbolPackage=E:\Visual Studio Projects\Sekta\Sekta.Installer.Msix\obj\Debug\Symbols\Sekta.Installer.Msix_1.1.0.0_AnyCPU_Debug.appxsym
-ResourcePack=E:\Visual Studio Projects\Sekta\Sekta.Installer.Msix\bin\AnyCPU\Debug\Sekta.Installer.Msix_1.1.0.0_scale-100.appx
-ResourcePack=E:\Visual Studio Projects\Sekta\Sekta.Installer.Msix\bin\AnyCPU\Debug\Sekta.Installer.Msix_1.1.0.0_scale-125.appx
-ResourcePack=E:\Visual Studio Projects\Sekta\Sekta.Installer.Msix\bin\AnyCPU\Debug\Sekta.Installer.Msix_1.1.0.0_scale-150.appx
-ResourcePack=E:\Visual Studio Projects\Sekta\Sekta.Installer.Msix\bin\AnyCPU\Debug\Sekta.Installer.Msix_1.1.0.0_scale-400.appx

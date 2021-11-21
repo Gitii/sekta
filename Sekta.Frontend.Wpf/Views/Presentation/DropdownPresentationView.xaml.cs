@@ -4,7 +4,8 @@ using Sekta.Core.ModelView.Presentation;
 
 namespace Sekta.Frontend.Wpf.Views.Presentation
 {
-    public partial class DropdownPresentationView : ReactiveUserControl<DropdownPresentationModelView>
+    public partial class DropdownPresentationView : ReactiveUserControl<DropdownPresentationModelView>,
+        System.Windows.Markup.IComponentConnector
     {
         public DropdownPresentationView()
         {

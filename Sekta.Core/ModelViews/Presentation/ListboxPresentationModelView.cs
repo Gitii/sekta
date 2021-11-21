@@ -34,7 +34,7 @@ namespace Sekta.Core.ModelView.Presentation
     }
 
 
-    public class ListboxPresentationModelView: BasePresentationModeView
+    public class ListboxPresentationModelView : BasePresentationModeView
     {
         private readonly AdmxPolicy _admxPolicy;
         private ListBox _presentationElement;
@@ -67,9 +67,14 @@ namespace Sekta.Core.ModelView.Presentation
 
             ValidationContext = new ValidationContext();
 
+
+            var itemsChanged = this.Items.ToObservableChangeSet().ToCollection().Select(
+                (cs) => cs.All((i) => !string.IsNullOrWhiteSpace(i.Value) && !string.IsNullOrWhiteSpace(i.KeyName)));
+
             this.ValidationRule(
-                (vm) => vm.Items.ToObservableChangeSet().ToCollection().Select((cs) => cs.All((i) => !string.IsNullOrWhiteSpace(i.Value) && !string.IsNullOrWhiteSpace(i.KeyName))),
-                (vm, areAllValid) => areAllValid ? null : "Both key name and value are required."
+                (vm) => vm.Items,
+                itemsChanged,
+                "Both key name and value are required."
             );
         }
 
@@ -104,13 +109,13 @@ namespace Sekta.Core.ModelView.Presentation
         {
             var id = PresentationElement.RefId;
 
-            return new PolicyOptionValue(EnumerationElement.key ?? _admxPolicy.Key, EnumerationElement.valuePrefix, 
+            return new PolicyOptionValue(EnumerationElement.key ?? _admxPolicy.Key, EnumerationElement.valuePrefix,
                 Items.Select((it) => new KeyValuePair<string, string>(it.KeyName, it.Value)).ToArray(), EnumerationElement.id);
         }
 
         public override void Deserialize(BaseElement[] elements, PolicyOptionValue? serializedValue)
         {
-            EnumerationElement = (ListElement) elements.First((e) => e.id == _presentationElement.RefId);
+            EnumerationElement = (ListElement)elements.First((e) => e.id == _presentationElement.RefId);
 
             if (serializedValue == null)
             {

@@ -4,7 +4,8 @@ using Sekta.Core.ModelView.Presentation;
 
 namespace Sekta.Frontend.Wpf.Views.Presentation
 {
-    public partial class CheckboxPresentationView : ReactiveUserControl<CheckboxPresentationModelView>
+    public partial class CheckboxPresentationView : ReactiveUserControl<CheckboxPresentationModelView>,
+        System.Windows.Markup.IComponentConnector
     {
         public CheckboxPresentationView()
         {

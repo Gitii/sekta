@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Sekta.Frontend.Wpf": {
-      "commandName": "Project",
-      "nativeDebugging": false
-    }
-  }
-}

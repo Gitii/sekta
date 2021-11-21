@@ -8,7 +8,8 @@ namespace Sekta.Frontend.Wpf.Windows
     /// <summary>
     /// Interaktionslogik für AdmxAdmlContext.xaml
     /// </summary>
-    public partial class AdmxAdmlContext : ReactiveWindow<AdmxAdmlContextViewModel>
+    public partial class AdmxAdmlContext : ReactiveWindow<AdmxAdmlContextViewModel>,
+        System.Windows.Markup.IComponentConnector
     {
         public AdmxAdmlContext()
         {

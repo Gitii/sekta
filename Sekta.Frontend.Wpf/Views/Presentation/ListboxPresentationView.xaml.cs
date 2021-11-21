@@ -4,7 +4,8 @@ using Sekta.Core.ModelView.Presentation;
 
 namespace Sekta.Frontend.Wpf.Views.Presentation
 {
-    public partial class ListboxPresentationView : ReactiveUserControl<ListboxPresentationModelView>
+    public partial class ListboxPresentationView : ReactiveUserControl<ListboxPresentationModelView>,
+        System.Windows.Markup.IComponentConnector
     {
         public ListboxPresentationView()
         {

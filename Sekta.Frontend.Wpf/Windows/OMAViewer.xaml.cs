@@ -8,7 +8,7 @@ using Sekta.Core.Schema;
 
 namespace Sekta.Frontend.Wpf.Windows
 {
-    public partial class OMAViewer : ReactiveWindow<OMAModelView>
+    public partial class OMAViewer : ReactiveWindow<OMAModelView>, System.Windows.Markup.IComponentConnector
     {
         public OMAViewer()
         {

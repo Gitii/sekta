@@ -3,7 +3,7 @@ using ReactiveUI;
 
 namespace Sekta.Frontend.Wpf.Views.Presentation
 {
-    public partial class TextPresentationView
+    public partial class TextPresentationView: System.Windows.Markup.IComponentConnector
     {
         public TextPresentationView()
         {

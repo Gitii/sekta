@@ -18,7 +18,7 @@ namespace Sekta.Frontend.Wpf.Windows
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : ReactiveWindow<AppViewModel>
+    public partial class MainWindow : ReactiveWindow<AppViewModel>, System.Windows.Markup.IComponentConnector
     {
         public MainWindow()
         {

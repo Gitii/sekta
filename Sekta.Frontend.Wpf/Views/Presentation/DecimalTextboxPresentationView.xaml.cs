@@ -3,7 +3,7 @@ using ReactiveUI;
 
 namespace Sekta.Frontend.Wpf.Views.Presentation
 {
-    public partial class DecimalTextboxPresentationView
+    public partial class DecimalTextboxPresentationView: System.Windows.Markup.IComponentConnector
     {
         public DecimalTextboxPresentationView()
         {
