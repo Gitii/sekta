@@ -2,3 +2,8 @@
 .vs
 obj
 bin
+AppPackages
+BundleArtifacts
+*.dll
+*.exe
+*.app*

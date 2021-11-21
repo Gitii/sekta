@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <StartupObject>Sekta.Frontend.Wpf.App</StartupObject>
     <LangVersion>latest</LangVersion>
@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="4.6.82" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.5" />
     <PackageReference Include="ReactiveUI.Events.WPF" Version="11.5.26" />
     <PackageReference Include="ReactiveUI.WPF" Version="11.5.26" />
   </ItemGroup>
