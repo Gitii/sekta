@@ -128,6 +128,16 @@
             Margin="10,0,10,10"
             Text="{Binding AdditionalNotes}"
             TextWrapping="Wrap" />
+
+        <StackPanel
+            Orientation="Horizontal"
+            FlowDirection="RightToLeft"
+            Grid.Row="5"
+            Grid.Column="0"
+            Margin="10"
+        >
+            <Button Content="Close" Click="Button_Click" />
+        </StackPanel>
     </Grid>
 
 </Window>

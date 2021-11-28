@@ -13,8 +13,8 @@
     xmlns:controls="clr-namespace:Sekta.Frontend.Wpf.Controls"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="Sekta - Admx/Adml Viewer"
-    Width="900"
-    Height="450"
+    Width="1300"
+    Height="900"
     x:TypeArguments="modelView:AppViewModel"
     ui:WindowHelper.UseModernWindowStyle="True"
     mc:Ignorable="d">
@@ -66,7 +66,7 @@
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="500" />
             </Grid.ColumnDefinitions>
             <Grid
                 Grid.Row="0"
@@ -82,6 +82,7 @@
                     Grid.Column="0"
                     Margin="0,0,4,0"
                     HorizontalAlignment="Stretch"
+                    VerticalContentAlignment="Center"
                     Watermark="Search for gpo, key or path" />
                 <Button
                     x:Name="ClearSearch"

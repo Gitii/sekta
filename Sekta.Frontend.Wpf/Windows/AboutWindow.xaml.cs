@@ -20,5 +20,10 @@ namespace Sekta.Frontend.Wpf.Windows
             Process.Start(new ProcessStartInfo(navigateUri));
             e.Handled = true;
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }

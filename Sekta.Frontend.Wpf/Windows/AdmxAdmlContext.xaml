@@ -92,7 +92,7 @@
                 Width="50"
                 Padding="4"
                 Click="OkButton_OnClick"
-                Content="Ok" />
+                Content="Open" />
             <Button
                 Width="50"
                 Margin="8,0,0,0"

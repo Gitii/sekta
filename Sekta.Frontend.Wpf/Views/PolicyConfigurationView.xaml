@@ -48,11 +48,9 @@
             Orientation="Horizontal">
             <Button
                 x:Name="ApplyButton"
-                Width="50"
                 Content="Apply" />
             <Button
                 x:Name="RevertButton"
-                Width="50"
                 Margin="8,0,0,0"
                 Content="Revert" />
         </StackPanel>

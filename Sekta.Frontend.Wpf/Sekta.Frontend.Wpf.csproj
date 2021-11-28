@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.20348.0</TargetFramework>
     <Platforms>x64;x86;arm64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
@@ -12,14 +12,16 @@
     <Description>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a></Description>
     <PackageIcon>policy.png</PackageIcon>
     <PackageLicenseExpression></PackageLicenseExpression>
-    <Copyright>Copyright (c) 2020 Lumenii</Copyright>
+    <Copyright>Copyright (c) 2021 Gitii</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Authors>Lumenii</Authors>
+    <Authors>Gitii</Authors>
     <Product>Sekta</Product>
-    <PackageProjectUrl>https://bitbucket.org/Lumenii/sekta/</PackageProjectUrl>
-    <RepositoryUrl>https://bitbucket.org/Lumenii/sekta/</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Gitii/sekta</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Gitii/sekta</RepositoryUrl>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>E:\Visual Studio Projects\Sekta\key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
