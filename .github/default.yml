@@ -1,0 +1,42 @@
+name: dotnet package
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        dotnet-version: ['6.0.x' ]
+        arch: [ 'win-x64', 'win-x86', 'win-arm64' ]
+
+    steps:
+      - uses: olegtarasov/get-tag@v2.1
+        id: tagName
+        with:
+          tagRegex: "v(.*)" 
+          tagRegexGroup: 1
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+          include-prerelease: true
+      - name: Publish
+        run: dotnet publish "Sekta.Frontend.Wpf/Sekta.Frontend.Wpf.csproj" -c release /p:PublishProfile="${{ matrix.arch }}" -o "$env:OUTPUT_DIR" -p:Version="$env:GIT_TAG_NAME"
+        env:
+          OUTPUT_DIR: ./bin/Release/publish/${{ matrix.arch }}
+      - name: Package
+        run: 7z a -mx9 -tzip "release-${env:GIT_TAG_NAME}-${{ matrix.arch }}.zip" "$env:PUBLISH_DIR/*"
+        env:
+          PUBLISH_DIR: ./bin/Release/publish/${{ matrix.arch }}
+      - name: Upload
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "release-*.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
