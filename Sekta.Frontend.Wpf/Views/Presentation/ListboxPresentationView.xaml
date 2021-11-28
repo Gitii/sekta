@@ -39,15 +39,14 @@
                         <xctk:WatermarkTextBox
                             Grid.Column="0"
                             Text="{Binding KeyName, Mode=TwoWay}"
-                            Watermark="Key value name" />
+                            Watermark="Name" />
                         <xctk:WatermarkTextBox
                             Grid.Column="1"
                             Margin="4,0"
                             Text="{Binding Value, Mode=TwoWay}"
-                            Watermark="Key value" />
+                            Watermark="Value" />
                         <Button
                             Grid.Column="2"
-                            Width="20"
                             Command="{Binding Path=ViewModel.RemoveItemCommand, RelativeSource={RelativeSource AncestorType={x:Type presentationViews1:ListboxPresentationView}}}"
                             CommandParameter="{Binding}"
                             Content="X" />
