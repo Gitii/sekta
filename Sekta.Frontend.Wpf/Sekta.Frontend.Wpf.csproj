@@ -9,7 +9,7 @@
     <StartupObject>Sekta.Frontend.Wpf.App</StartupObject>
     <LangVersion>latest</LangVersion>
     <ApplicationIcon>policy.ico</ApplicationIcon>
-    <Description>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a></Description>
+    <Description>A simple application that let's you open Windows/Office Group Policy Settings files (*.admx). Policies can be configured and exported as Powershell scripts or Intune OMA policies.</Description>
     <PackageIcon>policy.png</PackageIcon>
     <PackageLicenseExpression></PackageLicenseExpression>
     <Copyright>Copyright (c) 2021 Gitii</Copyright>

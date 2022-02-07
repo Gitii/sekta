@@ -45,6 +45,14 @@ Support for `adml` was neccessary because some OEMs do not name there policies m
 # ⚠️ License
 
 Sekta is free and open-source software licensed under MIT.  
-Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [https://www.flaticon.com](https://www.flaticon.com/).
+
+# <a id="privacy"></a> 🔒 Data Privacy
+
+## Information collected 
+Sekta does not collect any personal identiying information. 
+ 
+## Use of information 
+No information is collected or shared over the wire. We reserve the right to 
+make changes to this policy. Any changes to this policy will be updated. 
 
 <br />
