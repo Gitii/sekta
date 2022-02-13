@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Linq;
-using ReactiveUI;
+﻿using ReactiveUI;
 using ReactiveUI.Validation.Contexts;
 using ReactiveUI.Validation.Extensions;
 using Sekta.Admx.Schema;
@@ -9,17 +6,18 @@ using Sekta.Core.Schema;
 
 namespace Sekta.Core.ModelView.Presentation
 {
-    public class TextboxPresentationModelView: BasePresentationModeView
+    public class TextboxPresentationModelView : BasePresentationModeView
     {
         private readonly AdmxPolicy _admxPolicy;
         private TextBox _presentationElement;
         private TextElement _enumerationElement;
         private string _value;
-        
+
         readonly ObservableAsPropertyHelper<string> _defaultValue;
         readonly ObservableAsPropertyHelper<string> _label;
 
-        public TextboxPresentationModelView(TextBox presentationElement, TextElement enumerationElement, AdmxPolicy admxPolicy)
+        public TextboxPresentationModelView(TextBox presentationElement, TextElement enumerationElement,
+            AdmxPolicy admxPolicy)
         {
             _admxPolicy = admxPolicy;
             PresentationElement = presentationElement;
@@ -69,7 +67,8 @@ namespace Sekta.Core.ModelView.Presentation
 
         public override PolicyOptionValue Serialize(BaseElement[] elements)
         {
-            return new PolicyOptionValue(EnumerationElement.key ?? _admxPolicy.Key, EnumerationElement.valueName, Value, EnumerationElement.id);
+            return new PolicyOptionValue(EnumerationElement.key ?? _admxPolicy.Key, EnumerationElement.valueName, Value,
+                EnumerationElement.id);
         }
 
         public override void Deserialize(BaseElement[] elements, PolicyOptionValue? serializedValue)

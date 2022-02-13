@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DynamicData;
 using ReactiveUI;
@@ -14,9 +12,10 @@ using Splat;
 
 namespace Sekta.Core.ModelView
 {
-    public class AdmxAdmlContextViewModel: ReactiveObject
+    public class AdmxAdmlContextViewModel : ReactiveObject
     {
         string _admxFilePath;
+
         public string AdmxFilePath
         {
             get { return _admxFilePath; }
@@ -29,6 +28,7 @@ namespace Sekta.Core.ModelView
         public ReadOnlyObservableCollection<string> AdmlFilePaths => _admlFilePaths;
 
         string _selectedAdmlFilePath;
+
         public string SelectedAdmlFilePath
         {
             get { return _selectedAdmlFilePath; }
@@ -36,12 +36,13 @@ namespace Sekta.Core.ModelView
         }
 
         bool _autoAddAdmlFiles;
+
         public bool AutoAddAdmlFiles
         {
             get { return _autoAddAdmlFiles; }
             set { this.RaiseAndSetIfChanged(ref _autoAddAdmlFiles, value); }
         }
-        
+
         private ObservableAsPropertyHelper<bool> _isAllValid;
         public bool IsAllValid => _isAllValid.Value;
 
@@ -77,7 +78,8 @@ namespace Sekta.Core.ModelView
         {
             IOService service = Locator.Current.GetService<IOService>();
 
-            var filePath = await service.SelectSingleInputFile(new DialogFileFilter("Schema Definition File", "*.admx"));
+            var filePath =
+                await service.SelectSingleInputFile(new DialogFileFilter("Schema Definition File", "*.admx"));
             if (filePath != null)
             {
                 AdmxFilePath = filePath;
@@ -87,7 +89,8 @@ namespace Sekta.Core.ModelView
 
                     var expectedFileName = Path.GetFileNameWithoutExtension(filePath) + ".adml";
 
-                    foreach (string file in await service.FindFiles(Path.GetDirectoryName(AdmxFilePath), expectedFileName))
+                    foreach (string file in await service.FindFiles(Path.GetDirectoryName(AdmxFilePath),
+                                 expectedFileName))
                     {
                         _admlFilePathList.Add(file);
                     }

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using DynamicData;
 using ReactiveUI;
 using Sekta.Admx.Schema;
 using Sekta.Core.ModelView.Presentation;
@@ -13,7 +10,7 @@ using Sekta.Core.Schema;
 
 namespace Sekta.Core.ModelView
 {
-    public class PolicyConfigurationModelView: ReactiveObject
+    public class PolicyConfigurationModelView : ReactiveObject
     {
         private readonly AdmxPolicy _policy;
         private readonly PolicyPresentation _presentation;
@@ -38,7 +35,7 @@ namespace Sekta.Core.ModelView
                     if (i is CheckBox cb)
                     {
                         return new CheckboxPresentationModelView(cb, policy);
-                    } 
+                    }
                     else if (i is DropdownList dd)
                     {
                         return new DropdownPresentationModelView(dd, policy);
@@ -49,7 +46,7 @@ namespace Sekta.Core.ModelView
                     }
                     else if (i is TextBox tb)
                     {
-                        return new TextboxPresentationModelView(tb, (TextElement) enumElem, policy);
+                        return new TextboxPresentationModelView(tb, (TextElement)enumElem, policy);
                     }
                     else if (i is StringElement se)
                     {
@@ -71,7 +68,8 @@ namespace Sekta.Core.ModelView
             {
                 element.Changed.Subscribe((e) =>
                 {
-                    if (e.PropertyName != nameof(BasePresentationModeView.CurrentResources) && element.HasRelevantDataChanged(e.PropertyName))
+                    if (e.PropertyName != nameof(BasePresentationModeView.CurrentResources) &&
+                        element.HasRelevantDataChanged(e.PropertyName))
                     {
                         IsDataChanged = true;
                     }
@@ -81,13 +79,14 @@ namespace Sekta.Core.ModelView
             IObservable<bool> isValid = _presentationElements
                 .Where((pe) => pe.ValidationContext != null)
                 .Select((pe) => pe.ValidationContext.Valid)
-                .Concat(new []{Observable.Return(true)})
+                .Concat(new[] { Observable.Return(true) })
                 .CombineLatest()
                 .CombineLatest(this.WhenAnyValue((vm) => vm.IsEnabled), (list, isEnabled) => (list, isEnabled))
                 .Select(((tuple) =>
                 {
                     var (validationToken, isEnabled) = tuple;
-                    if (validationToken.Count == 0 || isEnabled.GetValueOrDefault(false) == false || validationToken.All((b) => b))
+                    if (validationToken.Count == 0 || isEnabled.GetValueOrDefault(false) == false ||
+                        validationToken.All((b) => b))
                     {
                         // assume everything is valid if
                         // 1. policy is disabled or not configured
@@ -113,7 +112,8 @@ namespace Sekta.Core.ModelView
                 }
             })).ToProperty(this, (vm) => vm.ValidationText, out _validationText);
 
-            ApplyChangesCommand = ReactiveCommand.CreateFromTask(ApplyChanges, this.WhenAnyValue((vm) => vm.AreElementsAllValid));
+            ApplyChangesCommand =
+                ReactiveCommand.CreateFromTask(ApplyChanges, this.WhenAnyValue((vm) => vm.AreElementsAllValid));
             RevertChangesCommand = ReactiveCommand.CreateFromTask(RevertChanges);
             _configuredPolicy = configuredPolicy;
 
@@ -133,6 +133,7 @@ namespace Sekta.Core.ModelView
         public bool AreElementsAllValid => _areElementsAllValid.Value;
 
         private bool? _isEnabled;
+
         public bool? IsEnabled
         {
             get { return _isEnabled; }
@@ -140,6 +141,7 @@ namespace Sekta.Core.ModelView
         }
 
         private bool _isDataChanged;
+
         public bool IsDataChanged
         {
             get { return _isDataChanged; }
@@ -147,6 +149,7 @@ namespace Sekta.Core.ModelView
         }
 
         private PolicyDefinitionResources _currentResources;
+
         public PolicyDefinitionResources CurrentResources
         {
             get { return _currentResources; }
@@ -172,7 +175,7 @@ namespace Sekta.Core.ModelView
                     }
 
                     var value = element.Serialize(_policy.Elements);
-                    
+
                     _configuredPolicy.Values.Add(new ConfiguredPolicyOption(element.Id, value));
                 }
 
@@ -185,7 +188,7 @@ namespace Sekta.Core.ModelView
                     AddDisabledValues();
                 }
             }
-            
+
             IsDataChanged = false;
             _configuredPolicy.IsEnabled = IsEnabled;
         }
@@ -194,14 +197,17 @@ namespace Sekta.Core.ModelView
         {
             if (_policy.DisabledValue != null)
             {
-                _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_disabledValue", _policy.DisabledValue.AsPolicyOption(_policy.Key, _policy.ValueName, AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
+                _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_disabledValue",
+                    _policy.DisabledValue.AsPolicyOption(_policy.Key, _policy.ValueName,
+                        AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
             }
-            
+
             if (_policy.DisabledList != null)
             {
                 foreach (ValueItem item in _policy.DisabledList.Items)
                 {
-                    _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_disabledList_" + item.Key, item.Value.AsPolicyOption(item.Key, item.ValueName, AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
+                    _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_disabledList_" + item.Key,
+                        item.Value.AsPolicyOption(item.Key, item.ValueName, AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
                 }
             }
         }
@@ -210,14 +216,17 @@ namespace Sekta.Core.ModelView
         {
             if (_policy.EnabledValue != null)
             {
-                _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_enabledValue", _policy.EnabledValue.AsPolicyOption(_policy.Key, _policy.ValueName, AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
+                _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_enabledValue",
+                    _policy.EnabledValue.AsPolicyOption(_policy.Key, _policy.ValueName,
+                        AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
             }
-            
+
             if (_policy.EnabledList != null)
             {
                 foreach (ValueItem item in _policy.EnabledList.Items)
                 {
-                    _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_enabledList_" + item.Key, item.Value.AsPolicyOption(item.Key, item.ValueName, AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
+                    _configuredPolicy.Values.Add(new ConfiguredPolicyOption(_policy.Key + "_enabledList_" + item.Key,
+                        item.Value.AsPolicyOption(item.Key, item.ValueName, AdmxPolicy.POLICY_EMBEDDED_OPTION_ID)));
                 }
             }
         }
@@ -229,7 +238,8 @@ namespace Sekta.Core.ModelView
 
             foreach (BasePresentationModeView element in _presentationElements.Where((pe) => !pe.IsStatic))
             {
-                ConfiguredPolicyOption value = _configuredPolicy.Values.FirstOrDefault((sv) => sv.ElementId == element.Id);
+                ConfiguredPolicyOption value =
+                    _configuredPolicy.Values.FirstOrDefault((sv) => sv.ElementId == element.Id);
 
                 element.Deserialize(_policy.Elements, value?.ElementValue);
             }

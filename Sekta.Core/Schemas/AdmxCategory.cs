@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Sekta.Admx.Schema;
 
 namespace Sekta.Core.Schema
@@ -25,13 +23,14 @@ namespace Sekta.Core.Schema
         /// </summary>
         public bool IsStub { get; set; } = false;
 
-        public string[] PathElements => GetCategoryPathElements().SelectMany((c) => new string[] { "/", c.DisplayName }).ToArray();
+        public string[] PathElements =>
+            GetCategoryPathElements().SelectMany((c) => new string[] { "/", c.DisplayName }).ToArray();
 
         public AdmxCategory[] GetCategoryPathElements()
         {
             if (_parent == null)
             {
-                return IsStub ? new AdmxCategory[0] : new [] { this };
+                return IsStub ? new AdmxCategory[0] : new[] { this };
             }
             else if (IsStub)
             {
@@ -40,7 +39,7 @@ namespace Sekta.Core.Schema
             }
             else
             {
-                return _parent.GetCategoryPathElements().Concat(new [] { this }).ToArray();
+                return _parent.GetCategoryPathElements().Concat(new[] { this }).ToArray();
             }
         }
 
@@ -54,7 +53,8 @@ namespace Sekta.Core.Schema
 
         public static List<AdmxCategory> From(List<Category> rawCategoryList)
         {
-            List<AdmxCategory> rootCategories = new List<AdmxCategory>(rawCategoryList.Where((rc) => rc.ParentCategory == null).Select((rc) => new AdmxCategory(rc, null)));
+            List<AdmxCategory> rootCategories = new List<AdmxCategory>(rawCategoryList
+                .Where((rc) => rc.ParentCategory == null).Select((rc) => new AdmxCategory(rc, null)));
 
             List<string> knownCategoryNames = rawCategoryList
                 .Select((c) => c.name)
@@ -79,7 +79,8 @@ namespace Sekta.Core.Schema
                 });
             }
 
-            List<Category> unorderedCategories = new List<Category>(rawCategoryList.Where((rc) => rc.ParentCategory != null));
+            List<Category> unorderedCategories =
+                new List<Category>(rawCategoryList.Where((rc) => rc.ParentCategory != null));
             while (unorderedCategories.Count > 0)
             {
                 var matchedCategories = unorderedCategories.Where((rc) =>

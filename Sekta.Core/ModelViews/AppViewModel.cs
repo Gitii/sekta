@@ -1,23 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
 using DynamicData;
-using ExtendedXmlSerializer;
-using ExtendedXmlSerializer.Configuration;
 using ReactiveUI;
 using Sekta.Admx.Schema;
 using Sekta.Core.IO;
@@ -39,79 +29,37 @@ namespace Sekta.Core.ModelView
         }
     }
 
-    public class AppViewModel: ReactiveObject
+    public class AppViewModel : ReactiveObject
     {
-        private AdmxPolicyDefinitions _policyDefinitions;
-        public AdmxPolicyDefinitions PolicyDefinitions
-        {
-            get => _policyDefinitions;
-            private set => this.RaiseAndSetIfChanged(ref _policyDefinitions, value);
-        }
-
-        string _policyDefinitionsContent;
-        public string PolicyDefinitionsContent
-        {
-            get { return _policyDefinitionsContent; }
-            set { this.RaiseAndSetIfChanged(ref _policyDefinitionsContent, value); }
-        }
-
-        private AdmxCategory _currentCategory;
-        public AdmxCategory CurrentCategory
-        {
-            get => _currentCategory;
-            private set => this.RaiseAndSetIfChanged(ref _currentCategory, value);
-        }
-
-        private AdmxPolicy _currentPolicy;
-        public AdmxPolicy CurrentPolicy
-        {
-            get => _currentPolicy;
-            private set => this.RaiseAndSetIfChanged(ref _currentPolicy, value);
-        }
-
-        PolicyDefinitionResources _currentResources;
-        public PolicyDefinitionResources CurrentResources
-        {
-            get { return _currentResources; }
-            set { this.RaiseAndSetIfChanged(ref _currentResources, value); }
-        }
-
-        private string _searchTerm;
-        public string SearchTerm
-        {
-            get => _searchTerm;
-            set => this.RaiseAndSetIfChanged(ref _searchTerm, value);
-        }
+        readonly ObservableAsPropertyHelper<bool> _areConfiguredPoliciesChanged;
 
         private readonly ObservableAsPropertyHelper<PolicyConfigurationModelView> _currentPolicyConfiguration;
-        public PolicyConfigurationModelView CurrentPolicyConfiguration => _currentPolicyConfiguration.Value;
 
-        private ObservableAsPropertyHelper<List<AdmxPolicy>> _currentPolicies;
-        public List<AdmxPolicy> CurrentPolicies => _currentPolicies.Value;
+        readonly ObservableAsPropertyHelper<bool> _isConfigurationReady;
 
-        private SourceList<PolicyDefinitionResources> _resourceList;
+        private readonly ObservableAsPropertyHelper<bool> _isSearchActive;
         private readonly ReadOnlyObservableCollection<PolicyDefinitionResources> _resources;
-        public ReadOnlyObservableCollection<PolicyDefinitionResources> Resources => _resources;
 
-        public ReactiveCommand<AdmxAndAdmlFiles, Unit> OpenFileCommand { get; }
-        public ReactiveCommand<Unit, Unit> ResetSearchTermCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoadConfigurationCommand { get; }
-        public ReactiveCommand<Unit, Unit> SaveConfigurationCommand { get; }
-        public ReactiveCommand<Unit, Unit> ExportConfigurationCommand { get; }
+        private readonly ObservableAsPropertyHelper<IEnumerable<AdmxPolicy>> _searchResults;
+
+        private ReadOnlyObservableCollection<ConfiguredPolicy> _configuredPolicies;
 
         private SourceList<ConfiguredPolicy> _configuredPolicyList;
 
-        private ReadOnlyObservableCollection<ConfiguredPolicy> _configuredPolicies;
-        public ReadOnlyObservableCollection<ConfiguredPolicy> ConfiguredPolicies => _configuredPolicies;
+        private AdmxCategory _currentCategory;
 
-        private readonly ObservableAsPropertyHelper<IEnumerable<AdmxPolicy>> _searchResults;
-        public IEnumerable<AdmxPolicy> SearchResults => _searchResults.Value;
+        private ObservableAsPropertyHelper<List<AdmxPolicy>> _currentPolicies;
 
-        private readonly ObservableAsPropertyHelper<bool> _isSearchActive;
-        public bool IsSearchActive => _isSearchActive.Value;
+        private AdmxPolicy _currentPolicy;
 
-        readonly ObservableAsPropertyHelper<bool> _areConfiguredPoliciesChanged;
-        public bool AreConfiguredPoliciesChanged => _areConfiguredPoliciesChanged.Value;
+        PolicyDefinitionResources _currentResources;
+        private AdmxPolicyDefinitions _policyDefinitions;
+
+        string _policyDefinitionsContent;
+
+        private SourceList<PolicyDefinitionResources> _resourceList;
+
+        private string _searchTerm;
 
         public AppViewModel()
         {
@@ -122,7 +70,7 @@ namespace Sekta.Core.ModelView
                 .ToProperty(this, x => x.CurrentPolicies, out _currentPolicies);
 
             _resourceList = new SourceList<PolicyDefinitionResources>();
-            _resourceList 
+            _resourceList
                 .Connect()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _resources)
@@ -132,7 +80,7 @@ namespace Sekta.Core.ModelView
                 .Subscribe((isNull) => CurrentPolicy = null);
 
             this.WhenAny(
-                    (vm) => vm.CurrentPolicy, 
+                    (vm) => vm.CurrentPolicy,
                     (p) =>
                     {
                         AdmxPolicy policy = p.Value;
@@ -143,7 +91,8 @@ namespace Sekta.Core.ModelView
                         }
                         else
                         {
-                            var group = _configuredPolicyList.Items.FirstOrDefault((cp) => cp.PolicyDefinitionName == policy.Name);
+                            var group = _configuredPolicyList.Items.FirstOrDefault((cp) =>
+                                cp.PolicyDefinitionName == policy.Name);
                             if (group == null)
                             {
                                 _configuredPolicyList.Add(group = new ConfiguredPolicy(policy.Name, policy.Class));
@@ -165,7 +114,7 @@ namespace Sekta.Core.ModelView
                     if (CurrentPolicyConfiguration != null)
                     {
                         CurrentPolicyConfiguration.CurrentResources = res;
-                    }  
+                    }
                 });
 
             _configuredPolicyList = new SourceList<ConfiguredPolicy>();
@@ -199,10 +148,63 @@ namespace Sekta.Core.ModelView
                 .WhenAnyValue((vm) => vm.IsSearchActive, (vm) => vm.PolicyDefinitions)
                 .Select((x) => !x.Item1 && x.Item2 != null);
 
+            isConfigurationReady.ToProperty(this, (vm) => vm.IsConfigurationReady, out _isConfigurationReady);
+
             LoadConfigurationCommand = ReactiveCommand.CreateFromTask(LoadConfiguration, isConfigurationReady);
             SaveConfigurationCommand = ReactiveCommand.CreateFromTask(SaveConfiguration, isConfigurationReady);
             ExportConfigurationCommand = ReactiveCommand.CreateFromTask(ExportConfiguration, isConfigurationReady);
         }
+
+        public AdmxPolicyDefinitions PolicyDefinitions
+        {
+            get => _policyDefinitions;
+            private set => this.RaiseAndSetIfChanged(ref _policyDefinitions, value);
+        }
+
+        public string PolicyDefinitionsContent
+        {
+            get { return _policyDefinitionsContent; }
+            set { this.RaiseAndSetIfChanged(ref _policyDefinitionsContent, value); }
+        }
+
+        public AdmxCategory CurrentCategory
+        {
+            get => _currentCategory;
+            private set => this.RaiseAndSetIfChanged(ref _currentCategory, value);
+        }
+
+        public AdmxPolicy CurrentPolicy
+        {
+            get => _currentPolicy;
+            private set => this.RaiseAndSetIfChanged(ref _currentPolicy, value);
+        }
+
+        public PolicyDefinitionResources CurrentResources
+        {
+            get { return _currentResources; }
+            set { this.RaiseAndSetIfChanged(ref _currentResources, value); }
+        }
+
+        public string SearchTerm
+        {
+            get => _searchTerm;
+            set => this.RaiseAndSetIfChanged(ref _searchTerm, value);
+        }
+
+        public PolicyConfigurationModelView CurrentPolicyConfiguration => _currentPolicyConfiguration.Value;
+        public List<AdmxPolicy> CurrentPolicies => _currentPolicies.Value;
+        public ReadOnlyObservableCollection<PolicyDefinitionResources> Resources => _resources;
+
+        public ReactiveCommand<AdmxAndAdmlFiles, Unit> OpenFileCommand { get; }
+        public ReactiveCommand<Unit, Unit> ResetSearchTermCommand { get; }
+        public ReactiveCommand<Unit, Unit> LoadConfigurationCommand { get; }
+        public ReactiveCommand<Unit, Unit> SaveConfigurationCommand { get; }
+        public ReactiveCommand<Unit, Unit> ExportConfigurationCommand { get; }
+        public ReadOnlyObservableCollection<ConfiguredPolicy> ConfiguredPolicies => _configuredPolicies;
+        public IEnumerable<AdmxPolicy> SearchResults => _searchResults.Value;
+        public bool IsSearchActive => _isSearchActive.Value;
+        public bool AreConfiguredPoliciesChanged => _areConfiguredPoliciesChanged.Value;
+        public bool IsConfigurationReady => _isConfigurationReady.Value;
 
         private async Task OpenAsync(AdmxAndAdmlFiles files)
         {
@@ -216,7 +218,8 @@ namespace Sekta.Core.ModelView
 
                 foreach (string admlFilePath in files.AdmlFilePaths)
                 {
-                    (PolicyDefinitionResources admlRes, DeserializationLog admlLog) = await PolicyDefinitionResources.DeserializeAsync(await service.OpenFileRead(admlFilePath));
+                    (PolicyDefinitionResources admlRes, DeserializationLog admlLog) =
+                        await PolicyDefinitionResources.DeserializeAsync(await service.OpenFileRead(admlFilePath));
 
                     string dirName = Path.GetFileName(Path.GetDirectoryName(admlFilePath));
                     var culture = dirName != null ? CultureInfo.GetCultureInfo(dirName) : null;
@@ -227,10 +230,12 @@ namespace Sekta.Core.ModelView
                     logs.Add((admlFilePath, admlLog));
                 }
 
-                (PolicyDefinitions admxDef, DeserializationLog admxLog) = await Admx.Schema.PolicyDefinitions.DeserializeAsync(await service.OpenFileRead(files.AdmxFilePath));
+                (PolicyDefinitions admxDef, DeserializationLog admxLog) =
+                    await Admx.Schema.PolicyDefinitions.DeserializeAsync(
+                        await service.OpenFileRead(files.AdmxFilePath));
 
                 ValidateAdmx(admxDef, admxLog);
-                
+
                 logs.Add((files.AdmxFilePath, admxLog));
 
                 _resourceList.Clear();
@@ -258,14 +263,18 @@ namespace Sekta.Core.ModelView
                     {
                         if (booleanElement.trueValue == null && booleanElement.falseValue == null)
                         {
-                            log.LogWarning(0, 0,$"Found boolean '{element.id}' which neither has a trueValue nor a trueList defined. Using fallback values.");
-                            booleanElement.trueValue = new ValueContainer() { Item = new ValueDecimal() { RawValueInAttribute = "1" }};
+                            log.LogWarning(0, 0,
+                                $"Found boolean '{element.id}' which neither has a trueValue nor a trueList defined. Using fallback values.");
+                            booleanElement.trueValue = new ValueContainer()
+                                { Item = new ValueDecimal() { RawValueInAttribute = "1" } };
                         }
 
                         if (booleanElement.falseValue == null && booleanElement.falseList == null)
                         {
-                            log.LogWarning(0, 0,$"Found boolean '{element.id}' which neither has a falseValue nor a falseList defined. Using fallback values.");
-                            booleanElement.falseValue = new ValueContainer() { Item = new ValueDecimal() { RawValueInAttribute = "0" }};
+                            log.LogWarning(0, 0,
+                                $"Found boolean '{element.id}' which neither has a falseValue nor a falseList defined. Using fallback values.");
+                            booleanElement.falseValue = new ValueContainer()
+                                { Item = new ValueDecimal() { RawValueInAttribute = "0" } };
                         }
                     }
                 }
@@ -286,9 +295,11 @@ namespace Sekta.Core.ModelView
             {
                 foreach (AdmxPolicy admxPolicy in category.Policies)
                 {
-                    if (culture.CompareInfo.IndexOf(admxPolicy.DisplayName?.LocalizeWith(CurrentResources) ?? "", SearchTerm, CompareOptions.IgnoreCase) >= 0
+                    if (culture.CompareInfo.IndexOf(admxPolicy.DisplayName?.LocalizeWith(CurrentResources) ?? "",
+                            SearchTerm, CompareOptions.IgnoreCase) >= 0
                         || culture.CompareInfo.IndexOf(admxPolicy.Key, SearchTerm, CompareOptions.IgnoreCase) >= 0
-                        || culture.CompareInfo.IndexOf(admxPolicy.ExplainText?.LocalizeWith(CurrentResources) ?? "", SearchTerm, CompareOptions.IgnoreCase) >= 0
+                        || culture.CompareInfo.IndexOf(admxPolicy.ExplainText?.LocalizeWith(CurrentResources) ?? "",
+                            SearchTerm, CompareOptions.IgnoreCase) >= 0
                         || culture.CompareInfo.IndexOf(admxPolicy.Name, SearchTerm, CompareOptions.IgnoreCase) >= 0)
                     {
                         yield return admxPolicy;
@@ -301,7 +312,8 @@ namespace Sekta.Core.ModelView
         {
             IOService service = Locator.Current.GetService<IOService>();
 
-            var selectedFilePath = await service.SelectSingleInputFile(new DialogFileFilter("Policy configuration (*.policy.json)",
+            var selectedFilePath = await service.SelectSingleInputFile(new DialogFileFilter(
+                "Policy configuration (*.policy.json)",
                 "*.policy.json"));
 
             if (selectedFilePath != null)
@@ -324,7 +336,8 @@ namespace Sekta.Core.ModelView
         {
             IOService service = Locator.Current.GetService<IOService>();
 
-            var selectedFilePath = await service.SelectSingleOutputFile(new DialogFileFilter("Policy configuration (*.policy.json)",
+            var selectedFilePath = await service.SelectSingleOutputFile(new DialogFileFilter(
+                "Policy configuration (*.policy.json)",
                 "*.policy.json"));
 
             if (selectedFilePath != null)
@@ -345,7 +358,8 @@ namespace Sekta.Core.ModelView
         {
             IOService service = Locator.Current.GetService<IOService>();
 
-            var selectedFilePath = await service.SelectSingleOutputFile(new DialogFileFilter("Powershell script (*.ps1)",
+            var selectedFilePath = await service.SelectSingleOutputFile(new DialogFileFilter(
+                "Powershell script (*.ps1)",
                 "*.ps1"));
 
             if (selectedFilePath != null)
@@ -353,7 +367,8 @@ namespace Sekta.Core.ModelView
                 using (Stream file = await service.CreateOrOverwriteFileWrite(selectedFilePath))
                 using (StreamWriter writer = new StreamWriter(file))
                 {
-                    foreach (ConfiguredPolicy policy in ConfiguredPolicies.Where((cp) => cp.IsEnabled.HasValue).OrderBy((cp) => cp.PolicyDefinitionName))
+                    foreach (ConfiguredPolicy policy in ConfiguredPolicies.Where((cp) => cp.IsEnabled.HasValue)
+                                 .OrderBy((cp) => cp.PolicyDefinitionName))
                     {
                         await writer.WriteLineAsync("# Policy : " + policy.PolicyDefinitionName);
                         await writer.WriteLineAsync("# Enabled: " + policy.IsEnabled);
@@ -383,21 +398,25 @@ namespace Sekta.Core.ModelView
                             foreach (ConfiguredPolicyOption option in policy.Values.OrderBy((v) => v.ElementId))
                             {
                                 await writer.WriteLineAsync("# Option: " + option.ElementId);
-                                await writer.WriteLineAsync($"New-Item -Path '{className}:\\{option.ElementValue.Path}' -Force | Out-Null");
+                                await writer.WriteLineAsync(
+                                    $"New-Item -Path '{className}:\\{option.ElementValue.Path}' -Force | Out-Null");
                                 if (option.ElementValue.KeyValueList != null)
                                 {
                                     foreach (KeyValuePair<string, string> pair in option.ElementValue.KeyValueList)
                                     {
-                                        await writer.WriteLineAsync($"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{pair.Key}' -Value '{pair.Value}' -PropertyType String -Force | Out-Null");
+                                        await writer.WriteLineAsync(
+                                            $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{pair.Key}' -Value '{pair.Value}' -PropertyType String -Force | Out-Null");
                                     }
-                                } 
+                                }
                                 else if (option.ElementValue.KeyValueString != null)
                                 {
-                                    await writer.WriteLineAsync($"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value '{option.ElementValue.KeyValueString}' -PropertyType String -Force | Out-Null");
+                                    await writer.WriteLineAsync(
+                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value '{option.ElementValue.KeyValueString}' -PropertyType String -Force | Out-Null");
                                 }
                                 else if (option.ElementValue.KeyValueUSignedInteger.HasValue)
                                 {
-                                    await writer.WriteLineAsync($"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value {option.ElementValue.KeyValueUSignedInteger} -PropertyType DWord -Force | Out-Null");
+                                    await writer.WriteLineAsync(
+                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value {option.ElementValue.KeyValueUSignedInteger} -PropertyType DWord -Force | Out-Null");
                                 }
 
                                 await writer.WriteLineAsync();

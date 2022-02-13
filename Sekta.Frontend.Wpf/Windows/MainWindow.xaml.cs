@@ -64,8 +64,8 @@ namespace Sekta.Frontend.Wpf.Windows
                 ).DisposeWith(disposable);
 
                 this.Bind(ViewModel,
-                        (vm) => vm.CurrentCategory,
-                        (v) => v.Categories.SelectedItem
+                    (vm) => vm.CurrentCategory,
+                    (v) => v.Categories.SelectedItem
                 ).DisposeWith(disposable);
 
                 ViewModel.WhenAnyValue((vm) => vm.CurrentCategory, (vm) => vm.SearchResults, (vm) => vm.IsSearchActive)
@@ -77,6 +77,7 @@ namespace Sekta.Frontend.Wpf.Windows
                             {
                                 return x.Item2;
                             }
+
                             ICollectionView view = CollectionViewSource.GetDefaultView(x.Item2);
                             view.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
                             return view as IEnumerable;
@@ -174,11 +175,10 @@ namespace Sekta.Frontend.Wpf.Windows
                     (x) => $"Sekta - Admx/Adml Viewer {(x ? "*" : "")}"
                 ).DisposeWith(disposable);
 
-                //this.OneWayBind(ViewModel,
-                //    (vm) => vm.ConfiguredPolicies,
-                //    (v) => v.ExportToIntuneButton.IsEnabled,
-                //    (x) => x != null && x.Count > 0
-                //).DisposeWith(disposable);
+                this.OneWayBind(ViewModel,
+                    (vm) => vm.IsConfigurationReady,
+                    (v) => v.ExportToIntuneButton.IsEnabled
+                ).DisposeWith(disposable);
             });
 
             ExitMenuItem.Click += (s, e) => Environment.Exit(0);
@@ -196,7 +196,7 @@ namespace Sekta.Frontend.Wpf.Windows
 
         private void LanguageMenuItem_OnClick(object sender, RoutedEventArgs e)
         {
-            MenuItem menuItem = ((MenuItem) e.OriginalSource);
+            MenuItem menuItem = ((MenuItem)e.OriginalSource);
             if (menuItem.Header is PolicyDefinitionResources res)
             {
                 ViewModel.CurrentResources = res;
@@ -214,7 +214,8 @@ namespace Sekta.Frontend.Wpf.Windows
 
         private void ExportToIntune_OnClick(object sender, RoutedEventArgs e)
         {
-            var w = new OMAViewer(ViewModel.ConfiguredPolicies.ToList(), ViewModel.PolicyDefinitionsContent, ViewModel.PolicyDefinitions);
+            var w = new OMAViewer(ViewModel.ConfiguredPolicies.ToList(), ViewModel.PolicyDefinitionsContent,
+                ViewModel.PolicyDefinitions);
             w.Owner = this;
             w.ShowDialog();
         }

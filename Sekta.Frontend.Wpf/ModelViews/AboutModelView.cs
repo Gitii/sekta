@@ -8,39 +8,38 @@ using ReactiveUI;
 namespace Sekta.Frontend.Wpf.ModelViews
 {
     public class AboutModelView : ReactiveObject
-	{
-		private ImageSource _applicationLogo;
-		private string _title;
-		private string _description;
-		private string _version;
-		private ImageSource _publisherLogo;
-		private string _copyright;
-		private string _additionalNotes;
-		private string _hyperlinkText;
-		private Uri _hyperlink;
-		private string _publisher;
+    {
+        private ImageSource _applicationLogo;
+        private string _title;
+        private string _description;
+        private string _version;
+        private ImageSource _publisherLogo;
+        private string _copyright;
+        private string _additionalNotes;
+        private string _hyperlinkText;
+        private Uri _hyperlink;
+        private string _publisher;
 
         public AboutModelView()
-		{
+        {
             Assembly assembly = Assembly.GetEntryAssembly() ?? throw new ArgumentNullException();
             AssemblyName assemblyName = assembly.GetName();
 
             Version = assemblyName.Version?.ToString() ?? "Unknown";
-			Title = assemblyName.Name;
+            Title = assemblyName.Name ?? String.Empty;
 
-            Copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright;
-			Description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description;
-			Publisher = assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company;
+            Copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? String.Empty;
+            Description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description ?? String.Empty;
+            Publisher = assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? String.Empty;
 
-			ApplicationLogo = new BitmapImage(new Uri(@"pack://application:,,,/policy.png", UriKind.Absolute));
-		}
+            ApplicationLogo = new BitmapImage(new Uri(@"pack://application:,,,/policy.png", UriKind.Absolute));
+        }
 
         public void UpdateWindow(Window window)
         {
             window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             window.SizeToContent = SizeToContent.WidthAndHeight;
             window.ResizeMode = ResizeMode.NoResize;
-            window.WindowStyle = WindowStyle.ToolWindow;
 
             window.ShowInTaskbar = false;
             window.Title = "About";
@@ -105,5 +104,5 @@ namespace Sekta.Frontend.Wpf.ModelViews
             get { return _additionalNotes; }
             set { this.RaiseAndSetIfChanged(ref _additionalNotes, value); }
         }
-	}
+    }
 }

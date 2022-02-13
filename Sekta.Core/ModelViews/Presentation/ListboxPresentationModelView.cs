@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
-using ReactiveUI.Validation.Abstractions;
 using ReactiveUI.Validation.Contexts;
 using ReactiveUI.Validation.Extensions;
 using Sekta.Admx.Schema;
@@ -19,6 +17,7 @@ namespace Sekta.Core.ModelView.Presentation
     public class ListboxItemPresentationModelView : ReactiveObject
     {
         private string _keyName;
+
         public string KeyName
         {
             get { return _keyName; }
@@ -26,6 +25,7 @@ namespace Sekta.Core.ModelView.Presentation
         }
 
         private string _value;
+
         public string Value
         {
             get { return _value; }
@@ -110,7 +110,8 @@ namespace Sekta.Core.ModelView.Presentation
             var id = PresentationElement.RefId;
 
             return new PolicyOptionValue(EnumerationElement.key ?? _admxPolicy.Key, EnumerationElement.valuePrefix,
-                Items.Select((it) => new KeyValuePair<string, string>(it.KeyName, it.Value)).ToArray(), EnumerationElement.id);
+                Items.Select((it) => new KeyValuePair<string, string>(it.KeyName, it.Value)).ToArray(),
+                EnumerationElement.id);
         }
 
         public override void Deserialize(BaseElement[] elements, PolicyOptionValue? serializedValue)
@@ -126,13 +127,13 @@ namespace Sekta.Core.ModelView.Presentation
                 _itemList.Edit((innerList) =>
                 {
                     innerList.Clear();
-                    innerList.AddRange(serializedValue.Value.ToStringListValue().Select((kv) => new ListboxItemPresentationModelView()
-                    {
-                        KeyName = kv.Key,
-                        Value = kv.Value
-                    }));
+                    innerList.AddRange(serializedValue.Value.ToStringListValue().Select((kv) =>
+                        new ListboxItemPresentationModelView()
+                        {
+                            KeyName = kv.Key,
+                            Value = kv.Value
+                        }));
                 });
-
             }
         }
 

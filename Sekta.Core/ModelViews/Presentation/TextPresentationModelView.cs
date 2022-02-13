@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Linq;
 using ReactiveUI;
 using Sekta.Admx.Schema;
 using Sekta.Core.Schema;
 
 namespace Sekta.Core.ModelView.Presentation
 {
-    public class TextPresentationModelView: BasePresentationModeView
+    public class TextPresentationModelView : BasePresentationModeView
     {
         private readonly AdmxPolicy _admxPolicy;
         private StringElement _presentationElement;
-        
+
         readonly ObservableAsPropertyHelper<string> _label;
 
         public TextPresentationModelView(StringElement presentationElement, AdmxPolicy admxPolicy)

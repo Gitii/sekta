@@ -1,15 +1,12 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Reactive.Linq;
-using DynamicData;
 using ReactiveUI;
 using Sekta.Admx.Schema;
 using Sekta.Core.Schema;
 
 namespace Sekta.Core.ModelView.Presentation
 {
-    public class DecimalTextboxPresentationModelView: BasePresentationModeView
+    public class DecimalTextboxPresentationModelView : BasePresentationModeView
     {
         private readonly AdmxPolicy _admxPolicy;
         private DecimalTextBox _presentationElement;
@@ -60,7 +57,7 @@ namespace Sekta.Core.ModelView.Presentation
         public uint SpinStep => _spinStep.Value;
 
         public uint DefaultValue => _defaultValue.Value;
-        
+
         public bool Spin => _spin.Value;
 
         public DecimalTextBox PresentationElement
@@ -83,12 +80,13 @@ namespace Sekta.Core.ModelView.Presentation
 
         public override PolicyOptionValue Serialize(BaseElement[] elements)
         {
-            return new PolicyOptionValue(EnumerationElement.key ?? _admxPolicy.Key, EnumerationElement.valueName, Value, EnumerationElement.id);
+            return new PolicyOptionValue(EnumerationElement.key ?? _admxPolicy.Key, EnumerationElement.valueName, Value,
+                EnumerationElement.id);
         }
 
         public override void Deserialize(BaseElement[] elements, PolicyOptionValue? serializedValue)
         {
-            EnumerationElement = (DecimalElement) elements.First((e) => e.id == _presentationElement.RefId);
+            EnumerationElement = (DecimalElement)elements.First((e) => e.id == _presentationElement.RefId);
 
             if (serializedValue == null)
             {

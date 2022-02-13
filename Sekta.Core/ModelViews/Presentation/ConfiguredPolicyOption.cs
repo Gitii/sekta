@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text;
-using Sekta.Admx.Schema;
 
 namespace Sekta.Core.ModelView.Presentation
 {

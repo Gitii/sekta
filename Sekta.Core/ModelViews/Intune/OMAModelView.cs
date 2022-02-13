@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -33,14 +32,15 @@ namespace Sekta.Core.ModelView.Intune
         private readonly List<ConfiguredPolicy> _configuredPolicies;
         private readonly AdmxPolicyDefinitions _definitions;
 
-        public OMAModelView(List<ConfiguredPolicy> configuredPolicies, string admxFileContent, AdmxPolicyDefinitions definitions)
+        public OMAModelView(List<ConfiguredPolicy> configuredPolicies, string admxFileContent,
+            AdmxPolicyDefinitions definitions)
         {
             _configuredPolicies = configuredPolicies;
             _definitions = definitions;
 
             this.WhenAnyValue((vm) => vm.ApplicationName, (vm) => vm.AdmxFileName)
-                .Throttle(TimeSpan.FromMilliseconds(300))
-                .ObserveOn(RxApp.MainThreadScheduler)
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .DistinctUntilChanged()
                 .Select((pair) =>
                 {
                     var (applicationName, fileName) = pair;
@@ -72,7 +72,10 @@ namespace Sekta.Core.ModelView.Intune
                                         {
                                             return new XElement("data",
                                                 new XAttribute("id", v.ElementValue.Id),
-                                                new XAttribute("value", string.Join(char.ConvertFromUtf32(61440).ToString(), v.ElementValue.KeyValueList.SelectMany((kv) => new string[] { kv.Key, kv.Value })))
+                                                new XAttribute("value",
+                                                    string.Join(char.ConvertFromUtf32(61440).ToString(),
+                                                        v.ElementValue.KeyValueList.SelectMany((kv) =>
+                                                            new string[] { kv.Key, kv.Value })))
                                             );
                                         }
                                         else
@@ -80,7 +83,8 @@ namespace Sekta.Core.ModelView.Intune
                                             var dataElement = new XElement("data",
                                                 new XAttribute("id", v.ElementValue.Id),
                                                 new XAttribute("value",
-                                                    v.ElementValue.KeyValueString ?? v.ElementValue.KeyValueUSignedInteger.Value.ToString())
+                                                    v.ElementValue.KeyValueString ??
+                                                    v.ElementValue.KeyValueUSignedInteger.Value.ToString())
                                             );
 
                                             return dataElement;
@@ -131,9 +135,8 @@ namespace Sekta.Core.ModelView.Intune
 
                     return entries.ToArray();
                 })
+                .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, (vm) => vm.Entries, out _entries);
-
-
         }
 
         private AdmxPolicy FindPolicy(AdmxPolicyDefinitions definitions, string policyName)
@@ -150,6 +153,7 @@ namespace Sekta.Core.ModelView.Intune
         }
 
         string _applicationName;
+
         public string ApplicationName
         {
             get { return _applicationName; }
@@ -157,6 +161,7 @@ namespace Sekta.Core.ModelView.Intune
         }
 
         string _admxFileName;
+
         public string AdmxFileName
         {
             get { return _admxFileName; }

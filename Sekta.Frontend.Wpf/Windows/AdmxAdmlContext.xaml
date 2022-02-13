@@ -84,17 +84,18 @@
             </ListBox>
         </Grid>
         <StackPanel
+            HorizontalAlignment="Right"
             Grid.Row="2"
             Margin="8"
             Orientation="Horizontal">
             <Button
                 x:Name="OkButton"
-                Width="50"
+                Width="100"
                 Padding="4"
                 Click="OkButton_OnClick"
                 Content="Open" />
             <Button
-                Width="50"
+                Width="100"
                 Margin="8,0,0,0"
                 Padding="4"
                 Click="CancelButton_OnClick"

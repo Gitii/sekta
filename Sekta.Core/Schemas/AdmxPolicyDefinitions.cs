@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Sekta.Admx.Schema;
 
 namespace Sekta.Core.Schema
@@ -14,7 +12,7 @@ namespace Sekta.Core.Schema
 
         public List<AdmxCategory> Categories => _categories;
 
-        public AdmxPolicyDefinitions(): this(new List<AdmxCategory>(), new List<AdmxPolicy>())
+        public AdmxPolicyDefinitions() : this(new List<AdmxCategory>(), new List<AdmxPolicy>())
         {
         }
 
@@ -38,8 +36,6 @@ namespace Sekta.Core.Schema
             List<AdmxPolicy> policies = AdmxPolicy.From(rawDefinitions.Policies, allCategories);
 
             return new AdmxPolicyDefinitions(categories, policies);
-
-
         }
     }
 }

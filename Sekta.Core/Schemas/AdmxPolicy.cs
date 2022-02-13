@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Sekta.Admx.Schema;
 
 namespace Sekta.Core.Schema
@@ -10,7 +8,7 @@ namespace Sekta.Core.Schema
     {
         private readonly PolicyDefinition _rawPolicyDefinition;
         private readonly AdmxCategory _category;
-        
+
         public string ValueName => _rawPolicyDefinition.valueName;
         public string Key => _rawPolicyDefinition.key;
         public string DisplayName => _rawPolicyDefinition.displayName;
