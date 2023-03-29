@@ -30,6 +30,7 @@
 - Configure policies (enable, disable, "not configured", including value & list support)
 - Save and load configured policies
 - Export policies as `powershell` script (ready to be executed) or view as OMA policies (for intune)
+- Light & Dark mode 😎
 
 ---
 
