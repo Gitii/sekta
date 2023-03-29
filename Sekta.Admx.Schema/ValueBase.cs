@@ -1,6 +1,3 @@
-﻿namespace Sekta.Admx.Schema
-{
-    public abstract class ValueBase
-    {
-    }
-}
+﻿namespace Sekta.Admx.Schema;
+
+public abstract class ValueBase { }

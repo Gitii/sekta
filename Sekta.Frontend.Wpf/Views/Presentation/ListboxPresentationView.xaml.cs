@@ -2,27 +2,25 @@
 using ReactiveUI;
 using Sekta.Core.ModelView.Presentation;
 
-namespace Sekta.Frontend.Wpf.Views.Presentation
-{
-    public partial class ListboxPresentationView : ReactiveUserControl<ListboxPresentationModelView>,
+namespace Sekta.Frontend.Wpf.Views.Presentation;
+
+public partial class ListboxPresentationView
+    : ReactiveUserControl<ListboxPresentationModelView>,
         System.Windows.Markup.IComponentConnector
+{
+    public ListboxPresentationView()
     {
-        public ListboxPresentationView()
-        {
-            InitializeComponent();
+        InitializeComponent();
 
-            this.WhenActivated((disposable) =>
+        this.WhenActivated(
+            (disposable) =>
             {
-                this.OneWayBind(ViewModel,
-                    (vm) => vm.Items,
-                    (v) => v.Items.ItemsSource
-                ).DisposeWith(disposable);
+                this.OneWayBind(ViewModel, (vm) => vm.Items, (v) => v.Items.ItemsSource)
+                    .DisposeWith(disposable);
 
-                this.BindCommand(ViewModel,
-                    (vm) => vm.AddItemCommand,
-                    (v) => v.AddItemButton
-                ).DisposeWith(disposable);
-            });
-        }
+                this.BindCommand(ViewModel, (vm) => vm.AddItemCommand, (v) => v.AddItemButton)
+                    .DisposeWith(disposable);
+            }
+        );
     }
 }

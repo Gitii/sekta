@@ -1,26 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Platforms>x64;x86;arm64</Platforms>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Platforms>x64;x86;arm64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\key.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="DynamicData" Version="7.13.1" />
+        <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
+        <PackageReference Include="ExtendedXmlSerializer" Version="3.7.11" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="ReactiveUI" Version="18.4.26" />
+        <PackageReference Include="ReactiveUI.Validation" Version="3.1.7" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DynamicData" Version="7.4.3" />
-    <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
-    <PackageReference Include="ExtendedXmlSerializer" Version="3.7.6" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="ReactiveUI" Version="16.3.10" />
-    <PackageReference Include="ReactiveUI.Validation" Version="2.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Sekta.Admx.Schema\Sekta.Admx.Schema.csproj" />
-  </ItemGroup>
-
+    <ItemGroup>
+        <ProjectReference Include="..\Sekta.Admx.Schema\Sekta.Admx.Schema.csproj" />
+    </ItemGroup>
 </Project>

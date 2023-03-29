@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
-{
-    public partial class Annotation
-    {
-        /// <remarks/>
-        [XmlAnyElement()]
-        public System.Xml.XmlNode[] Any { get; set; }
+namespace Sekta.Admx.Schema;
 
-        /// <remarks/>
-        [XmlAttribute()]
-        public string Application { get; set; }
-    }
+public partial class Annotation
+{
+    /// <remarks/>
+    [XmlAnyElement()]
+    public System.Xml.XmlNode[] Any { get; set; }
+
+    /// <remarks/>
+    [XmlAttribute()]
+    public string Application { get; set; }
 }

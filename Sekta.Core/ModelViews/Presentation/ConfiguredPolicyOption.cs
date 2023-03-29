@@ -1,17 +1,16 @@
 ﻿using System;
 
-namespace Sekta.Core.ModelView.Presentation
+namespace Sekta.Core.ModelView.Presentation;
+
+public class ConfiguredPolicyOption
 {
-    public class ConfiguredPolicyOption
+    public ConfiguredPolicyOption(string elementId, PolicyOptionValue elementValue)
     {
-        public ConfiguredPolicyOption(string elementId, PolicyOptionValue elementValue)
-        {
-            ElementId = elementId ?? throw new ArgumentNullException(nameof(elementId));
-            ElementValue = elementValue;
-        }
-
-        public string ElementId { get; }
-
-        public PolicyOptionValue ElementValue { get; }
+        ElementId = elementId ?? throw new ArgumentNullException(nameof(elementId));
+        ElementValue = elementValue;
     }
+
+    public string ElementId { get; }
+
+    public PolicyOptionValue ElementValue { get; }
 }

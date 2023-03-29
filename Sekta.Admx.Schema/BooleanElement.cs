@@ -1,28 +1,27 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
+namespace Sekta.Admx.Schema;
+
+public partial class BooleanElement : BaseElement
 {
-    public partial class BooleanElement : BaseElement
-    {
-        private string idField;
+    private string idField;
 
-        private string clientExtensionField;
+    private string clientExtensionField;
 
-        private string keyField;
+    private string keyField;
 
-        private string valueNameField;
+    private string valueNameField;
 
-        /// <remarks/>
-        public ValueContainer trueValue { get; set; }
+    /// <remarks/>
+    public ValueContainer trueValue { get; set; }
 
-        /// <remarks/>
-        public ValueContainer falseValue { get; set; }
+    /// <remarks/>
+    public ValueContainer falseValue { get; set; }
 
-        /// <remarks/>
-        public ValueList trueList { get; set; }
+    /// <remarks/>
+    public ValueList trueList { get; set; }
 
-        /// <remarks/>
-        public ValueList falseList { get; set; }
-    }
+    /// <remarks/>
+    public ValueList falseList { get; set; }
 }

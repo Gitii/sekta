@@ -1,10 +1,9 @@
 ﻿using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
+namespace Sekta.Admx.Schema;
+
+public partial class StringElement : BaseDataElement
 {
-    public partial class StringElement : BaseDataElement
-    {
-        [XmlText]
-        public string Value { get; set; }
-    }
+    [XmlText]
+    public string Value { get; set; }
 }

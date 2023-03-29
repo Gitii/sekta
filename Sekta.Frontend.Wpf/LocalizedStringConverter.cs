@@ -7,27 +7,26 @@ using System.Windows.Data;
 using Sekta.Admx.Schema;
 using Sekta.Core;
 
-namespace Sekta.Frontend.Wpf
+namespace Sekta.Frontend.Wpf;
+
+public class LocalizedStringConverter : IValueConverter
 {
-    public class LocalizedStringConverter: IValueConverter
+    public PolicyDefinitionResources CurrentResources { get; set; }
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        public PolicyDefinitionResources CurrentResources { get; set; }
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        if (CurrentResources == null || string.IsNullOrEmpty(value as string))
         {
-            if (CurrentResources == null || string.IsNullOrEmpty(value as string))
-            {
-                return value;
-            }
-            else
-            {
-                return ((string) value).LocalizeWith(CurrentResources);
-            }
+            return value;
         }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        else
         {
-            throw new NotSupportedException();
+            return ((string)value).LocalizeWith(CurrentResources);
         }
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
     }
 }

@@ -2,27 +2,29 @@
 using ReactiveUI;
 using Sekta.Core.ModelView.Presentation;
 
-namespace Sekta.Frontend.Wpf.Views.Presentation
-{
-    public partial class CheckboxPresentationView : ReactiveUserControl<CheckboxPresentationModelView>,
+namespace Sekta.Frontend.Wpf.Views.Presentation;
+
+public partial class CheckboxPresentationView
+    : ReactiveUserControl<CheckboxPresentationModelView>,
         System.Windows.Markup.IComponentConnector
+{
+    public CheckboxPresentationView()
     {
-        public CheckboxPresentationView()
-        {
-            InitializeComponent();
+        InitializeComponent();
 
-            this.WhenActivated((disposable) =>
+        this.WhenActivated(
+            (disposable) =>
             {
-                this.Bind(ViewModel,
-                    (vm) => vm.IsChecked,
-                    (v) => v.CheckBox.IsChecked
-                ).DisposeWith(disposable);
+                this.Bind(ViewModel, (vm) => vm.IsChecked, (v) => v.CheckBox.IsChecked)
+                    .DisposeWith(disposable);
 
-                this.OneWayBind(ViewModel,
-                    (vm) => vm.PresentationElement.Value,
-                    (v) => v.CheckBox.Content
-                ).DisposeWith(disposable);
-            });
-        }
+                this.OneWayBind(
+                        ViewModel,
+                        (vm) => vm.PresentationElement.Value,
+                        (v) => v.CheckBox.Content
+                    )
+                    .DisposeWith(disposable);
+            }
+        );
     }
 }

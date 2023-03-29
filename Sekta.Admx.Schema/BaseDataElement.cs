@@ -1,10 +1,9 @@
 ﻿using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
+namespace Sekta.Admx.Schema;
+
+public abstract class BaseDataElement
 {
-    public abstract class BaseDataElement
-    {
-        [XmlAttribute("refId")]
-        public string RefId { get; set; }
-    }
+    [XmlAttribute("refId")]
+    public string RefId { get; set; }
 }

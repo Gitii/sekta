@@ -1,56 +1,60 @@
 ﻿using System.Linq;
 using Sekta.Admx.Schema;
 
-namespace Sekta.Core
+namespace Sekta.Core;
+
+public static class LocalizationExtensions
 {
-    public static class LocalizationExtensions
+    public static string LocalizeWith(this string str, PolicyDefinitionResources resources)
     {
-        public static string LocalizeWith(this string str, PolicyDefinitionResources resources)
+        if (string.IsNullOrEmpty(str) || resources == null)
         {
-            if (string.IsNullOrEmpty(str) || resources == null)
-            {
-                return str;
-            }
-
-            if (str.StartsWith("$(string.") && str.EndsWith((")")))
-            {
-                var parts = str.Substring(2, str.Length - 3).Split('.');
-                if (parts.Length == 2)
-                {
-                    string key = parts[1];
-
-                    return resources.Resources.StringTable.FirstOrDefault((ls) => ls.Id == key)?.Value;
-                }
-            }
-
-            LocalizedString localizedString = resources.Resources.StringTable.FirstOrDefault((ls) => ls.Id == str);
-            if (localizedString != null)
-            {
-                return localizedString.Value;
-            }
-
             return str;
         }
 
-        public static PolicyPresentation GetLocalizedPresentation(this string str, PolicyDefinitionResources resources)
+        if (str.StartsWith("$(string.") && str.EndsWith((")")))
         {
-            if (string.IsNullOrEmpty(str) || resources == null)
+            var parts = str.Substring(2, str.Length - 3).Split('.');
+            if (parts.Length == 2)
             {
-                return null;
+                string key = parts[1];
+
+                return resources.Resources.StringTable.FirstOrDefault((ls) => ls.Id == key)?.Value;
             }
+        }
 
-            if (str.StartsWith("$(presentation.") && str.EndsWith((")")))
-            {
-                var parts = str.Substring(2, str.Length - 3).Split('.');
-                if (parts.Length == 2)
-                {
-                    string key = parts[1];
+        LocalizedString localizedString = resources.Resources.StringTable.FirstOrDefault(
+            (ls) => ls.Id == str
+        );
+        if (localizedString != null)
+        {
+            return localizedString.Value;
+        }
 
-                    return resources.Resources.PresentationTable.FirstOrDefault((ls) => ls.Id == key);
-                }
-            }
+        return str;
+    }
 
+    public static PolicyPresentation GetLocalizedPresentation(
+        this string str,
+        PolicyDefinitionResources resources
+    )
+    {
+        if (string.IsNullOrEmpty(str) || resources == null)
+        {
             return null;
         }
+
+        if (str.StartsWith("$(presentation.") && str.EndsWith((")")))
+        {
+            var parts = str.Substring(2, str.Length - 3).Split('.');
+            if (parts.Length == 2)
+            {
+                string key = parts[1];
+
+                return resources.Resources.PresentationTable.FirstOrDefault((ls) => ls.Id == key);
+            }
+        }
+
+        return null;
     }
 }

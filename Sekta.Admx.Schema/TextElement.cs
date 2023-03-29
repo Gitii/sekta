@@ -1,36 +1,35 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
+namespace Sekta.Admx.Schema;
+
+public partial class TextElement : BaseElement
 {
-    public partial class TextElement : BaseElement
+    public TextElement()
     {
-        public TextElement()
-        {
-            required = false;
-            maxLength = ((uint) (1023));
-            expandable = false;
-            soft = false;
-        }
-
-        /// <remarks/>
-        [XmlAttribute()]
-        [System.ComponentModel.DefaultValueAttribute(false)]
-        public bool required { get; set; }
-
-        /// <remarks/>
-        [XmlAttribute()]
-        [System.ComponentModel.DefaultValueAttribute(typeof(uint), "1023")]
-        public uint maxLength { get; set; }
-
-        /// <remarks/>
-        [XmlAttribute()]
-        [System.ComponentModel.DefaultValueAttribute(false)]
-        public bool expandable { get; set; }
-
-        /// <remarks/>
-        [XmlAttribute()]
-        [System.ComponentModel.DefaultValueAttribute(false)]
-        public bool soft { get; set; }
+        required = false;
+        maxLength = ((uint)(1023));
+        expandable = false;
+        soft = false;
     }
+
+    /// <remarks/>
+    [XmlAttribute()]
+    [System.ComponentModel.DefaultValueAttribute(false)]
+    public bool required { get; set; }
+
+    /// <remarks/>
+    [XmlAttribute()]
+    [System.ComponentModel.DefaultValueAttribute(typeof(uint), "1023")]
+    public uint maxLength { get; set; }
+
+    /// <remarks/>
+    [XmlAttribute()]
+    [System.ComponentModel.DefaultValueAttribute(false)]
+    public bool expandable { get; set; }
+
+    /// <remarks/>
+    [XmlAttribute()]
+    [System.ComponentModel.DefaultValueAttribute(false)]
+    public bool soft { get; set; }
 }

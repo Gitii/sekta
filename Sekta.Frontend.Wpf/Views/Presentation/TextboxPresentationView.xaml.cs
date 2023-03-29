@@ -1,26 +1,23 @@
 ﻿using System.Reactive.Disposables;
 using ReactiveUI;
 
-namespace Sekta.Frontend.Wpf.Views.Presentation
+namespace Sekta.Frontend.Wpf.Views.Presentation;
+
+public partial class TextboxPresentationView : System.Windows.Markup.IComponentConnector
 {
-    public partial class TextboxPresentationView: System.Windows.Markup.IComponentConnector
+    public TextboxPresentationView()
     {
-        public TextboxPresentationView()
-        {
-            InitializeComponent();
+        InitializeComponent();
 
-            this.WhenActivated((disposable) =>
+        this.WhenActivated(
+            (disposable) =>
             {
-                this.Bind(ViewModel,
-                    (vm) => vm.Value,
-                    (v) => v.TextBox.Text
-                ).DisposeWith(disposable);
+                this.Bind(ViewModel, (vm) => vm.Value, (v) => v.TextBox.Text)
+                    .DisposeWith(disposable);
 
-                this.OneWayBind(ViewModel,
-                    (vm) => vm.Label,
-                    (v) => v.LabelTextBlock.Text
-                ).DisposeWith(disposable);
-            });
-        }
+                this.OneWayBind(ViewModel, (vm) => vm.Label, (v) => v.LabelTextBlock.Text)
+                    .DisposeWith(disposable);
+            }
+        );
     }
 }

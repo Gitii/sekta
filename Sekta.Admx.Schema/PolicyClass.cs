@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
+namespace Sekta.Admx.Schema;
+
+public enum PolicyClass
 {
-    public enum PolicyClass
-    {
-        /// <remarks/>
-        User,
+    /// <remarks/>
+    User,
 
-        /// <remarks/>
-        Machine,
+    /// <remarks/>
+    Machine,
 
-        /// <remarks/>
-        Both,
-    }
+    /// <remarks/>
+    Both,
 }

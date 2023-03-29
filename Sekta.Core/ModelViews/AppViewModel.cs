@@ -15,420 +15,498 @@ using Sekta.Core.ModelView.Presentation;
 using Sekta.Core.Schema;
 using Splat;
 
-namespace Sekta.Core.ModelView
+namespace Sekta.Core.ModelView;
+
+public readonly struct AdmxAndAdmlFiles
 {
-    public readonly struct AdmxAndAdmlFiles
-    {
-        public readonly string AdmxFilePath;
-        public readonly string[] AdmlFilePaths;
+    public readonly string AdmxFilePath;
+    public readonly string[] AdmlFilePaths;
 
-        public AdmxAndAdmlFiles(string admxFilePath, IEnumerable<string> admlFilePaths)
-        {
-            AdmxFilePath = admxFilePath;
-            AdmlFilePaths = admlFilePaths.ToArray();
-        }
+    public AdmxAndAdmlFiles(string admxFilePath, IEnumerable<string> admlFilePaths)
+    {
+        AdmxFilePath = admxFilePath;
+        AdmlFilePaths = admlFilePaths.ToArray();
     }
+}
 
-    public class AppViewModel : ReactiveObject
+public class AppViewModel : ReactiveObject
+{
+    readonly ObservableAsPropertyHelper<bool> _areConfiguredPoliciesChanged;
+
+    private readonly ObservableAsPropertyHelper<PolicyConfigurationModelView> _currentPolicyConfiguration;
+
+    readonly ObservableAsPropertyHelper<bool> _isConfigurationReady;
+
+    private readonly ObservableAsPropertyHelper<bool> _isSearchActive;
+    private readonly ReadOnlyObservableCollection<PolicyDefinitionResources> _resources;
+
+    private readonly ObservableAsPropertyHelper<IEnumerable<AdmxPolicy>> _searchResults;
+
+    private ReadOnlyObservableCollection<ConfiguredPolicy> _configuredPolicies;
+
+    private SourceList<ConfiguredPolicy> _configuredPolicyList;
+
+    private AdmxCategory _currentCategory;
+
+    private ObservableAsPropertyHelper<List<AdmxPolicy>> _currentPolicies;
+
+    private AdmxPolicy _currentPolicy;
+
+    PolicyDefinitionResources _currentResources;
+    private AdmxPolicyDefinitions _policyDefinitions;
+
+    string _policyDefinitionsContent;
+
+    private SourceList<PolicyDefinitionResources> _resourceList;
+
+    private string _searchTerm;
+
+    public AppViewModel()
     {
-        readonly ObservableAsPropertyHelper<bool> _areConfiguredPoliciesChanged;
+        OpenFileCommand = ReactiveCommand.CreateFromTask<AdmxAndAdmlFiles>(OpenAsync);
+        ResetSearchTermCommand = ReactiveCommand.Create(ResetSearchTerm);
 
-        private readonly ObservableAsPropertyHelper<PolicyConfigurationModelView> _currentPolicyConfiguration;
+        this.WhenAny(x => x.CurrentCategory.Policies, x => x.Value)
+            .ToProperty(this, x => x.CurrentPolicies, out _currentPolicies);
 
-        readonly ObservableAsPropertyHelper<bool> _isConfigurationReady;
+        _resourceList = new SourceList<PolicyDefinitionResources>();
+        _resourceList
+            .Connect()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Bind(out _resources)
+            .Subscribe();
 
-        private readonly ObservableAsPropertyHelper<bool> _isSearchActive;
-        private readonly ReadOnlyObservableCollection<PolicyDefinitionResources> _resources;
+        this.WhenAny((vm) => vm.CurrentCategory, (x) => x)
+            .Subscribe((isNull) => CurrentPolicy = null);
 
-        private readonly ObservableAsPropertyHelper<IEnumerable<AdmxPolicy>> _searchResults;
+        this.WhenAny(
+                (vm) => vm.CurrentPolicy,
+                (p) =>
+                {
+                    AdmxPolicy policy = p.Value;
 
-        private ReadOnlyObservableCollection<ConfiguredPolicy> _configuredPolicies;
-
-        private SourceList<ConfiguredPolicy> _configuredPolicyList;
-
-        private AdmxCategory _currentCategory;
-
-        private ObservableAsPropertyHelper<List<AdmxPolicy>> _currentPolicies;
-
-        private AdmxPolicy _currentPolicy;
-
-        PolicyDefinitionResources _currentResources;
-        private AdmxPolicyDefinitions _policyDefinitions;
-
-        string _policyDefinitionsContent;
-
-        private SourceList<PolicyDefinitionResources> _resourceList;
-
-        private string _searchTerm;
-
-        public AppViewModel()
-        {
-            OpenFileCommand = ReactiveCommand.CreateFromTask<AdmxAndAdmlFiles>(OpenAsync);
-            ResetSearchTermCommand = ReactiveCommand.Create(ResetSearchTerm);
-
-            this.WhenAny(x => x.CurrentCategory.Policies, x => x.Value)
-                .ToProperty(this, x => x.CurrentPolicies, out _currentPolicies);
-
-            _resourceList = new SourceList<PolicyDefinitionResources>();
-            _resourceList
-                .Connect()
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Bind(out _resources)
-                .Subscribe();
-
-            this.WhenAny((vm) => vm.CurrentCategory, (x) => x)
-                .Subscribe((isNull) => CurrentPolicy = null);
-
-            this.WhenAny(
-                    (vm) => vm.CurrentPolicy,
-                    (p) =>
+                    if (policy == null)
                     {
-                        AdmxPolicy policy = p.Value;
-
-                        if (policy == null)
+                        return null;
+                    }
+                    else
+                    {
+                        var group = _configuredPolicyList.Items.FirstOrDefault(
+                            (cp) => cp.PolicyDefinitionName == policy.Name
+                        );
+                        if (group == null)
                         {
-                            return null;
+                            _configuredPolicyList.Add(
+                                group = new ConfiguredPolicy(policy.Name, policy.Class)
+                            );
                         }
-                        else
-                        {
-                            var group = _configuredPolicyList.Items.FirstOrDefault((cp) =>
-                                cp.PolicyDefinitionName == policy.Name);
-                            if (group == null)
-                            {
-                                _configuredPolicyList.Add(group = new ConfiguredPolicy(policy.Name, policy.Class));
-                            }
 
-                            var res = new PolicyConfigurationModelView(policy,
-                                policy.Presentation.GetLocalizedPresentation(CurrentResources), group);
+                        var res = new PolicyConfigurationModelView(
+                            policy,
+                            policy.Presentation.GetLocalizedPresentation(CurrentResources),
+                            group
+                        );
 
-                            res.CurrentResources = CurrentResources;
+                        res.CurrentResources = CurrentResources;
 
-                            return res;
-                        }
-                    })
-                .ToProperty(this, (vm) => vm.CurrentPolicyConfiguration, out _currentPolicyConfiguration);
+                        return res;
+                    }
+                }
+            )
+            .ToProperty(
+                this,
+                (vm) => vm.CurrentPolicyConfiguration,
+                out _currentPolicyConfiguration
+            );
 
-            this.WhenAny((vm) => vm.CurrentResources, (x) => x.Value)
-                .Subscribe((res) =>
+        this.WhenAny((vm) => vm.CurrentResources, (x) => x.Value)
+            .Subscribe(
+                (res) =>
                 {
                     if (CurrentPolicyConfiguration != null)
                     {
                         CurrentPolicyConfiguration.CurrentResources = res;
                     }
-                });
+                }
+            );
 
-            _configuredPolicyList = new SourceList<ConfiguredPolicy>();
-            _configuredPolicyList
-                .Connect()
-                .AutoRefresh()
-                .Bind(out _configuredPolicies)
-                .Subscribe();
+        _configuredPolicyList = new SourceList<ConfiguredPolicy>();
+        _configuredPolicyList.Connect().AutoRefresh().Bind(out _configuredPolicies).Subscribe();
 
-            _searchResults = this
-                .WhenAnyValue(x => x.SearchTerm)
-                .Throttle(TimeSpan.FromMilliseconds(800))
-                .Select(term => term?.Trim())
-                .DistinctUntilChanged()
-                .Where(term => !string.IsNullOrWhiteSpace(term))
-                .Select(SearchPolicies)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this, (x) => x.SearchResults, out _searchResults);
+        _searchResults = this.WhenAnyValue(x => x.SearchTerm)
+            .Throttle(TimeSpan.FromMilliseconds(800))
+            .Select(term => term?.Trim())
+            .DistinctUntilChanged()
+            .Where(term => !string.IsNullOrWhiteSpace(term))
+            .Select(SearchPolicies)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, (x) => x.SearchResults, out _searchResults);
 
-            _isSearchActive = this
-                .WhenAnyValue(x => x.SearchTerm)
-                .Select((term) => !string.IsNullOrWhiteSpace(term))
-                .ToProperty(this, x => x.IsSearchActive);
+        _isSearchActive = this.WhenAnyValue(x => x.SearchTerm)
+            .Select((term) => !string.IsNullOrWhiteSpace(term))
+            .ToProperty(this, x => x.IsSearchActive);
 
-            _configuredPolicyList
-                .Connect()
-                .Select((x) => true)
-                .ToProperty(this, (vm) => vm.AreConfiguredPoliciesChanged, out _areConfiguredPoliciesChanged);
+        _configuredPolicyList
+            .Connect()
+            .Select((x) => true)
+            .ToProperty(
+                this,
+                (vm) => vm.AreConfiguredPoliciesChanged,
+                out _areConfiguredPoliciesChanged
+            );
 
-            var isConfigurationReady = this
-                .WhenAnyValue((vm) => vm.IsSearchActive, (vm) => vm.PolicyDefinitions)
-                .Select((x) => !x.Item1 && x.Item2 != null);
+        var isConfigurationReady = this.WhenAnyValue(
+                (vm) => vm.IsSearchActive,
+                (vm) => vm.PolicyDefinitions
+            )
+            .Select((x) => !x.Item1 && x.Item2 != null);
 
-            isConfigurationReady.ToProperty(this, (vm) => vm.IsConfigurationReady, out _isConfigurationReady);
+        isConfigurationReady.ToProperty(
+            this,
+            (vm) => vm.IsConfigurationReady,
+            out _isConfigurationReady
+        );
 
-            LoadConfigurationCommand = ReactiveCommand.CreateFromTask(LoadConfiguration, isConfigurationReady);
-            SaveConfigurationCommand = ReactiveCommand.CreateFromTask(SaveConfiguration, isConfigurationReady);
-            ExportConfigurationCommand = ReactiveCommand.CreateFromTask(ExportConfiguration, isConfigurationReady);
-        }
+        LoadConfigurationCommand = ReactiveCommand.CreateFromTask(
+            LoadConfiguration,
+            isConfigurationReady
+        );
+        SaveConfigurationCommand = ReactiveCommand.CreateFromTask(
+            SaveConfiguration,
+            isConfigurationReady
+        );
+        ExportConfigurationCommand = ReactiveCommand.CreateFromTask(
+            ExportConfiguration,
+            isConfigurationReady
+        );
+    }
 
-        public AdmxPolicyDefinitions PolicyDefinitions
+    public AdmxPolicyDefinitions PolicyDefinitions
+    {
+        get => _policyDefinitions;
+        private set => this.RaiseAndSetIfChanged(ref _policyDefinitions, value);
+    }
+
+    public string PolicyDefinitionsContent
+    {
+        get { return _policyDefinitionsContent; }
+        set { this.RaiseAndSetIfChanged(ref _policyDefinitionsContent, value); }
+    }
+
+    public AdmxCategory CurrentCategory
+    {
+        get => _currentCategory;
+        private set => this.RaiseAndSetIfChanged(ref _currentCategory, value);
+    }
+
+    public AdmxPolicy CurrentPolicy
+    {
+        get => _currentPolicy;
+        private set => this.RaiseAndSetIfChanged(ref _currentPolicy, value);
+    }
+
+    public PolicyDefinitionResources CurrentResources
+    {
+        get { return _currentResources; }
+        set { this.RaiseAndSetIfChanged(ref _currentResources, value); }
+    }
+
+    public string SearchTerm
+    {
+        get => _searchTerm;
+        set => this.RaiseAndSetIfChanged(ref _searchTerm, value);
+    }
+
+    public PolicyConfigurationModelView CurrentPolicyConfiguration =>
+        _currentPolicyConfiguration.Value;
+    public List<AdmxPolicy> CurrentPolicies => _currentPolicies.Value;
+    public ReadOnlyObservableCollection<PolicyDefinitionResources> Resources => _resources;
+
+    public ReactiveCommand<AdmxAndAdmlFiles, Unit> OpenFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> ResetSearchTermCommand { get; }
+    public ReactiveCommand<Unit, Unit> LoadConfigurationCommand { get; }
+    public ReactiveCommand<Unit, Unit> SaveConfigurationCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExportConfigurationCommand { get; }
+    public ReadOnlyObservableCollection<ConfiguredPolicy> ConfiguredPolicies => _configuredPolicies;
+    public IEnumerable<AdmxPolicy> SearchResults => _searchResults.Value;
+    public bool IsSearchActive => _isSearchActive.Value;
+    public bool AreConfiguredPoliciesChanged => _areConfiguredPoliciesChanged.Value;
+    public bool IsConfigurationReady => _isConfigurationReady.Value;
+
+    private async Task OpenAsync(AdmxAndAdmlFiles files)
+    {
+        IOService service = Locator.Current.GetService<IOService>();
+
+        if (
+            await service.FileExists(
+                files.AdmlFilePaths.Concat(new string[] { files.AdmxFilePath })
+            )
+        )
         {
-            get => _policyDefinitions;
-            private set => this.RaiseAndSetIfChanged(ref _policyDefinitions, value);
-        }
+            List<PolicyDefinitionResources> resources = new List<PolicyDefinitionResources>();
 
-        public string PolicyDefinitionsContent
-        {
-            get { return _policyDefinitionsContent; }
-            set { this.RaiseAndSetIfChanged(ref _policyDefinitionsContent, value); }
-        }
+            List<(string, DeserializationLog)> logs = new List<(string, DeserializationLog)>();
 
-        public AdmxCategory CurrentCategory
-        {
-            get => _currentCategory;
-            private set => this.RaiseAndSetIfChanged(ref _currentCategory, value);
-        }
-
-        public AdmxPolicy CurrentPolicy
-        {
-            get => _currentPolicy;
-            private set => this.RaiseAndSetIfChanged(ref _currentPolicy, value);
-        }
-
-        public PolicyDefinitionResources CurrentResources
-        {
-            get { return _currentResources; }
-            set { this.RaiseAndSetIfChanged(ref _currentResources, value); }
-        }
-
-        public string SearchTerm
-        {
-            get => _searchTerm;
-            set => this.RaiseAndSetIfChanged(ref _searchTerm, value);
-        }
-
-        public PolicyConfigurationModelView CurrentPolicyConfiguration => _currentPolicyConfiguration.Value;
-        public List<AdmxPolicy> CurrentPolicies => _currentPolicies.Value;
-        public ReadOnlyObservableCollection<PolicyDefinitionResources> Resources => _resources;
-
-        public ReactiveCommand<AdmxAndAdmlFiles, Unit> OpenFileCommand { get; }
-        public ReactiveCommand<Unit, Unit> ResetSearchTermCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoadConfigurationCommand { get; }
-        public ReactiveCommand<Unit, Unit> SaveConfigurationCommand { get; }
-        public ReactiveCommand<Unit, Unit> ExportConfigurationCommand { get; }
-        public ReadOnlyObservableCollection<ConfiguredPolicy> ConfiguredPolicies => _configuredPolicies;
-        public IEnumerable<AdmxPolicy> SearchResults => _searchResults.Value;
-        public bool IsSearchActive => _isSearchActive.Value;
-        public bool AreConfiguredPoliciesChanged => _areConfiguredPoliciesChanged.Value;
-        public bool IsConfigurationReady => _isConfigurationReady.Value;
-
-        private async Task OpenAsync(AdmxAndAdmlFiles files)
-        {
-            IOService service = Locator.Current.GetService<IOService>();
-
-            if (await service.FileExists(files.AdmlFilePaths.Concat(new string[] { files.AdmxFilePath })))
+            foreach (string admlFilePath in files.AdmlFilePaths)
             {
-                List<PolicyDefinitionResources> resources = new List<PolicyDefinitionResources>();
+                (PolicyDefinitionResources admlRes, DeserializationLog admlLog) =
+                    await PolicyDefinitionResources.DeserializeAsync(
+                        await service.OpenFileRead(admlFilePath)
+                    );
 
-                List<(string, DeserializationLog)> logs = new List<(string, DeserializationLog)>();
+                string dirName = Path.GetFileName(Path.GetDirectoryName(admlFilePath));
+                var culture = dirName != null ? CultureInfo.GetCultureInfo(dirName) : null;
+                admlRes.Culture = culture;
+                admlRes.CultureEnglishName =
+                    culture?.EnglishName ?? $"Unknown {(resources.Count + 1)}";
 
-                foreach (string admlFilePath in files.AdmlFilePaths)
-                {
-                    (PolicyDefinitionResources admlRes, DeserializationLog admlLog) =
-                        await PolicyDefinitionResources.DeserializeAsync(await service.OpenFileRead(admlFilePath));
+                resources.Add(admlRes);
+                logs.Add((admlFilePath, admlLog));
+            }
 
-                    string dirName = Path.GetFileName(Path.GetDirectoryName(admlFilePath));
-                    var culture = dirName != null ? CultureInfo.GetCultureInfo(dirName) : null;
-                    admlRes.Culture = culture;
-                    admlRes.CultureEnglishName = culture?.EnglishName ?? $"Unknown {(resources.Count + 1)}";
+            (PolicyDefinitions admxDef, DeserializationLog admxLog) =
+                await Admx.Schema.PolicyDefinitions.DeserializeAsync(
+                    await service.OpenFileRead(files.AdmxFilePath)
+                );
 
-                    resources.Add(admlRes);
-                    logs.Add((admlFilePath, admlLog));
-                }
+            ValidateAdmx(admxDef, admxLog);
 
-                (PolicyDefinitions admxDef, DeserializationLog admxLog) =
-                    await Admx.Schema.PolicyDefinitions.DeserializeAsync(
-                        await service.OpenFileRead(files.AdmxFilePath));
+            logs.Add((files.AdmxFilePath, admxLog));
 
-                ValidateAdmx(admxDef, admxLog);
+            _resourceList.Clear();
+            _resourceList.AddRange(resources);
+            CurrentResources = resources.FirstOrDefault();
+            PolicyDefinitions = AdmxPolicyDefinitions.From(admxDef);
 
-                logs.Add((files.AdmxFilePath, admxLog));
+            _configuredPolicyList.Clear();
 
-                _resourceList.Clear();
-                _resourceList.AddRange(resources);
-                CurrentResources = resources.FirstOrDefault();
-                PolicyDefinitions = AdmxPolicyDefinitions.From(admxDef);
-
-                _configuredPolicyList.Clear();
-
-                using (var admxFileStream = await service.OpenFileRead(files.AdmxFilePath))
-                using (var reader = new StreamReader(admxFileStream))
-                {
-                    PolicyDefinitionsContent = reader.ReadToEnd();
-                }
+            using (var admxFileStream = await service.OpenFileRead(files.AdmxFilePath))
+            using (var reader = new StreamReader(admxFileStream))
+            {
+                PolicyDefinitionsContent = reader.ReadToEnd();
             }
         }
+    }
 
-        private void ValidateAdmx(PolicyDefinitions policyDefinitions, DeserializationLog log)
+    private void ValidateAdmx(PolicyDefinitions policyDefinitions, DeserializationLog log)
+    {
+        foreach (
+            PolicyDefinition policy in policyDefinitions.Policies.Where((p) => p.Elements != null)
+        )
         {
-            foreach (PolicyDefinition policy in policyDefinitions.Policies.Where((p) => p.Elements != null))
+            foreach (BaseElement element in policy.Elements)
             {
-                foreach (BaseElement element in policy.Elements)
+                if (element is BooleanElement booleanElement)
                 {
-                    if (element is BooleanElement booleanElement)
+                    if (booleanElement.trueValue == null && booleanElement.falseValue == null)
                     {
-                        if (booleanElement.trueValue == null && booleanElement.falseValue == null)
+                        log.LogWarning(
+                            0,
+                            0,
+                            $"Found boolean '{element.id}' which neither has a trueValue nor a trueList defined. Using fallback values."
+                        );
+                        booleanElement.trueValue = new ValueContainer()
                         {
-                            log.LogWarning(0, 0,
-                                $"Found boolean '{element.id}' which neither has a trueValue nor a trueList defined. Using fallback values.");
-                            booleanElement.trueValue = new ValueContainer()
-                                { Item = new ValueDecimal() { RawValueInAttribute = "1" } };
-                        }
+                            Item = new ValueDecimal() { RawValueInAttribute = "1" }
+                        };
+                    }
 
-                        if (booleanElement.falseValue == null && booleanElement.falseList == null)
+                    if (booleanElement.falseValue == null && booleanElement.falseList == null)
+                    {
+                        log.LogWarning(
+                            0,
+                            0,
+                            $"Found boolean '{element.id}' which neither has a falseValue nor a falseList defined. Using fallback values."
+                        );
+                        booleanElement.falseValue = new ValueContainer()
                         {
-                            log.LogWarning(0, 0,
-                                $"Found boolean '{element.id}' which neither has a falseValue nor a falseList defined. Using fallback values.");
-                            booleanElement.falseValue = new ValueContainer()
-                                { Item = new ValueDecimal() { RawValueInAttribute = "0" } };
-                        }
+                            Item = new ValueDecimal() { RawValueInAttribute = "0" }
+                        };
                     }
                 }
             }
         }
+    }
 
-        private void ResetSearchTerm()
+    private void ResetSearchTerm()
+    {
+        SearchTerm = null;
+    }
+
+    private IEnumerable<AdmxPolicy> SearchPolicies(string term)
+    {
+        var culture = CurrentResources.Culture ?? CultureInfo.InvariantCulture;
+
+        foreach (AdmxCategory category in PolicyDefinitions.Categories.FlattenCategories())
         {
-            SearchTerm = null;
-        }
-
-        private IEnumerable<AdmxPolicy> SearchPolicies(
-            string term)
-        {
-            var culture = CurrentResources.Culture ?? CultureInfo.InvariantCulture;
-
-            foreach (AdmxCategory category in PolicyDefinitions.Categories.FlattenCategories())
+            foreach (AdmxPolicy admxPolicy in category.Policies)
             {
-                foreach (AdmxPolicy admxPolicy in category.Policies)
+                if (
+                    culture.CompareInfo.IndexOf(
+                        admxPolicy.DisplayName?.LocalizeWith(CurrentResources) ?? "",
+                        SearchTerm,
+                        CompareOptions.IgnoreCase
+                    ) >= 0
+                    || culture.CompareInfo.IndexOf(
+                        admxPolicy.Key,
+                        SearchTerm,
+                        CompareOptions.IgnoreCase
+                    ) >= 0
+                    || culture.CompareInfo.IndexOf(
+                        admxPolicy.ExplainText?.LocalizeWith(CurrentResources) ?? "",
+                        SearchTerm,
+                        CompareOptions.IgnoreCase
+                    ) >= 0
+                    || culture.CompareInfo.IndexOf(
+                        admxPolicy.Name,
+                        SearchTerm,
+                        CompareOptions.IgnoreCase
+                    ) >= 0
+                )
                 {
-                    if (culture.CompareInfo.IndexOf(admxPolicy.DisplayName?.LocalizeWith(CurrentResources) ?? "",
-                            SearchTerm, CompareOptions.IgnoreCase) >= 0
-                        || culture.CompareInfo.IndexOf(admxPolicy.Key, SearchTerm, CompareOptions.IgnoreCase) >= 0
-                        || culture.CompareInfo.IndexOf(admxPolicy.ExplainText?.LocalizeWith(CurrentResources) ?? "",
-                            SearchTerm, CompareOptions.IgnoreCase) >= 0
-                        || culture.CompareInfo.IndexOf(admxPolicy.Name, SearchTerm, CompareOptions.IgnoreCase) >= 0)
-                    {
-                        yield return admxPolicy;
-                    }
+                    yield return admxPolicy;
                 }
             }
         }
+    }
 
-        private async Task LoadConfiguration()
+    private async Task LoadConfiguration()
+    {
+        IOService service = Locator.Current.GetService<IOService>();
+
+        var selectedFilePath = await service.SelectSingleInputFile(
+            new DialogFileFilter("Policy configuration (*.policy.json)", "*.policy.json")
+        );
+
+        if (selectedFilePath != null)
         {
-            IOService service = Locator.Current.GetService<IOService>();
-
-            var selectedFilePath = await service.SelectSingleInputFile(new DialogFileFilter(
-                "Policy configuration (*.policy.json)",
-                "*.policy.json"));
-
-            if (selectedFilePath != null)
+            using (Stream file = await service.OpenFileRead(selectedFilePath))
+            using (StreamReader reader = new StreamReader(file))
             {
-                using (Stream file = await service.OpenFileRead(selectedFilePath))
-                using (StreamReader reader = new StreamReader(file))
-                {
-                    var policies = ConfiguredPolicy.Deserialize(reader.ReadToEnd());
+                var policies = ConfiguredPolicy.Deserialize(reader.ReadToEnd());
 
-                    _configuredPolicyList.Edit((innerList) =>
+                _configuredPolicyList.Edit(
+                    (innerList) =>
                     {
                         innerList.Clear();
                         innerList.AddRange(policies);
-                    });
-                }
+                    }
+                );
             }
         }
+    }
 
-        private async Task SaveConfiguration()
+    private async Task SaveConfiguration()
+    {
+        IOService service = Locator.Current.GetService<IOService>();
+
+        var selectedFilePath = await service.SelectSingleOutputFile(
+            new DialogFileFilter("Policy configuration (*.policy.json)", "*.policy.json")
+        );
+
+        if (selectedFilePath != null)
         {
-            IOService service = Locator.Current.GetService<IOService>();
-
-            var selectedFilePath = await service.SelectSingleOutputFile(new DialogFileFilter(
-                "Policy configuration (*.policy.json)",
-                "*.policy.json"));
-
-            if (selectedFilePath != null)
+            using (Stream file = await service.CreateOrOverwriteFileWrite(selectedFilePath))
+            using (StreamWriter writer = new StreamWriter(file))
             {
-                using (Stream file = await service.CreateOrOverwriteFileWrite(selectedFilePath))
-                using (StreamWriter writer = new StreamWriter(file))
-                {
-                    var strPolicyList = ConfiguredPolicy.Serialize(ConfiguredPolicies);
+                var strPolicyList = ConfiguredPolicy.Serialize(ConfiguredPolicies);
 
-                    writer.Write(strPolicyList);
+                writer.Write(strPolicyList);
 
-                    writer.Close();
-                }
+                writer.Close();
             }
         }
+    }
 
-        private async Task ExportConfiguration()
+    private async Task ExportConfiguration()
+    {
+        IOService service = Locator.Current.GetService<IOService>();
+
+        var selectedFilePath = await service.SelectSingleOutputFile(
+            new DialogFileFilter("Powershell script (*.ps1)", "*.ps1")
+        );
+
+        if (selectedFilePath != null)
         {
-            IOService service = Locator.Current.GetService<IOService>();
-
-            var selectedFilePath = await service.SelectSingleOutputFile(new DialogFileFilter(
-                "Powershell script (*.ps1)",
-                "*.ps1"));
-
-            if (selectedFilePath != null)
+            using (Stream file = await service.CreateOrOverwriteFileWrite(selectedFilePath))
+            using (StreamWriter writer = new StreamWriter(file))
             {
-                using (Stream file = await service.CreateOrOverwriteFileWrite(selectedFilePath))
-                using (StreamWriter writer = new StreamWriter(file))
+                foreach (
+                    ConfiguredPolicy policy in ConfiguredPolicies
+                        .Where((cp) => cp.IsEnabled.HasValue)
+                        .OrderBy((cp) => cp.PolicyDefinitionName)
+                )
                 {
-                    foreach (ConfiguredPolicy policy in ConfiguredPolicies.Where((cp) => cp.IsEnabled.HasValue)
-                                 .OrderBy((cp) => cp.PolicyDefinitionName))
+                    await writer.WriteLineAsync("# Policy : " + policy.PolicyDefinitionName);
+                    await writer.WriteLineAsync("# Enabled: " + policy.IsEnabled);
+                    await writer.WriteLineAsync("# =========================================");
+
+                    string[] classNames;
+                    switch (policy.PolicyClass)
                     {
-                        await writer.WriteLineAsync("# Policy : " + policy.PolicyDefinitionName);
-                        await writer.WriteLineAsync("# Enabled: " + policy.IsEnabled);
-                        await writer.WriteLineAsync("# =========================================");
-
-                        string[] classNames;
-                        switch (policy.PolicyClass)
-                        {
-                            case PolicyClass.User:
-                                classNames = new string[] { "HKCU" };
-                                break;
-                            case PolicyClass.Machine:
-                                classNames = new string[] { "HKLM" };
-                                break;
-                            case PolicyClass.Both:
-                                classNames = new string[] { "HKCU", "HKLM" };
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        foreach (string className in classNames)
-                        {
-                            await writer.WriteLineAsync("# Class: " + policy.PolicyClass);
-                            await writer.WriteLineAsync("# -----------------------------------------");
-
-                            foreach (ConfiguredPolicyOption option in policy.Values.OrderBy((v) => v.ElementId))
-                            {
-                                await writer.WriteLineAsync("# Option: " + option.ElementId);
-                                await writer.WriteLineAsync(
-                                    $"New-Item -Path '{className}:\\{option.ElementValue.Path}' -Force | Out-Null");
-                                if (option.ElementValue.KeyValueList != null)
-                                {
-                                    foreach (KeyValuePair<string, string> pair in option.ElementValue.KeyValueList)
-                                    {
-                                        await writer.WriteLineAsync(
-                                            $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{pair.Key}' -Value '{pair.Value}' -PropertyType String -Force | Out-Null");
-                                    }
-                                }
-                                else if (option.ElementValue.KeyValueString != null)
-                                {
-                                    await writer.WriteLineAsync(
-                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value '{option.ElementValue.KeyValueString}' -PropertyType String -Force | Out-Null");
-                                }
-                                else if (option.ElementValue.KeyValueUSignedInteger.HasValue)
-                                {
-                                    await writer.WriteLineAsync(
-                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value {option.ElementValue.KeyValueUSignedInteger} -PropertyType DWord -Force | Out-Null");
-                                }
-
-                                await writer.WriteLineAsync();
-                            }
-                        }
-
-                        await writer.WriteLineAsync();
-                        await writer.WriteLineAsync();
+                        case PolicyClass.User:
+                            classNames = new string[] { "HKCU" };
+                            break;
+                        case PolicyClass.Machine:
+                            classNames = new string[] { "HKLM" };
+                            break;
+                        case PolicyClass.Both:
+                            classNames = new string[] { "HKCU", "HKLM" };
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
 
-                    writer.Close();
+                    foreach (string className in classNames)
+                    {
+                        await writer.WriteLineAsync("# Class: " + policy.PolicyClass);
+                        await writer.WriteLineAsync("# -----------------------------------------");
+
+                        foreach (
+                            ConfiguredPolicyOption option in policy.Values.OrderBy(
+                                (v) => v.ElementId
+                            )
+                        )
+                        {
+                            await writer.WriteLineAsync("# Option: " + option.ElementId);
+                            await writer.WriteLineAsync(
+                                $"New-Item -Path '{className}:\\{option.ElementValue.Path}' -Force | Out-Null"
+                            );
+                            if (option.ElementValue.KeyValueList != null)
+                            {
+                                foreach (
+                                    KeyValuePair<string, string> pair in option
+                                        .ElementValue
+                                        .KeyValueList
+                                )
+                                {
+                                    await writer.WriteLineAsync(
+                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{pair.Key}' -Value '{pair.Value}' -PropertyType String -Force | Out-Null"
+                                    );
+                                }
+                            }
+                            else if (option.ElementValue.KeyValueString != null)
+                            {
+                                await writer.WriteLineAsync(
+                                    $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value '{option.ElementValue.KeyValueString}' -PropertyType String -Force | Out-Null"
+                                );
+                            }
+                            else if (option.ElementValue.KeyValueUSignedInteger.HasValue)
+                            {
+                                await writer.WriteLineAsync(
+                                    $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value {option.ElementValue.KeyValueUSignedInteger} -PropertyType DWord -Force | Out-Null"
+                                );
+                            }
+
+                            await writer.WriteLineAsync();
+                        }
+                    }
+
+                    await writer.WriteLineAsync();
+                    await writer.WriteLineAsync();
                 }
+
+                writer.Close();
             }
         }
     }

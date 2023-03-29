@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
+namespace Sekta.Admx.Schema;
+
+public partial class LocalizationPresentationTable
 {
-    public partial class LocalizationPresentationTable
-    {
-        /// <remarks/>
-        [XmlElement("presentation")]
-        public PolicyPresentation[] presentation { get; set; }
-    }
+    /// <remarks/>
+    [XmlElement("presentation")]
+    public PolicyPresentation[] presentation { get; set; }
 }

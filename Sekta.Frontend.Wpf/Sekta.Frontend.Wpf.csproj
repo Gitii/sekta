@@ -1,87 +1,86 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net6.0-windows10.0.20348.0</TargetFramework>
+        <Platforms>x64;x86;arm64</Platforms>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+        <UseWPF>true</UseWPF>
+        <StartupObject>Sekta.Frontend.Wpf.App</StartupObject>
+        <LangVersion>latest</LangVersion>
+        <ApplicationIcon>policy.ico</ApplicationIcon>
+        <Description>
+            A simple application that let's you open Windows/Office Group Policy Settings files (*.admx). Policies can
+            be configured and exported as Powershell scripts or Intune OMA policies.
+        </Description>
+        <PackageIcon>policy.png</PackageIcon>
+        <PackageLicenseExpression />
+        <Copyright>Copyright (c) 2021 Gitii</Copyright>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <Authors>Gitii</Authors>
+        <Product>Sekta</Product>
+        <PackageProjectUrl>https://github.com/Gitii/sekta</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Gitii/sekta</RepositoryUrl>
+        <Nullable>enable</Nullable>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.20348.0</TargetFramework>
-    <Platforms>x64;x86;arm64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <UseWPF>true</UseWPF>
-    <StartupObject>Sekta.Frontend.Wpf.App</StartupObject>
-    <LangVersion>latest</LangVersion>
-    <ApplicationIcon>policy.ico</ApplicationIcon>
-    <Description>A simple application that let's you open Windows/Office Group Policy Settings files (*.admx). Policies can be configured and exported as Powershell scripts or Intune OMA policies.</Description>
-    <PackageIcon>policy.png</PackageIcon>
-    <PackageLicenseExpression></PackageLicenseExpression>
-    <Copyright>Copyright (c) 2021 Gitii</Copyright>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Authors>Gitii</Authors>
-    <Product>Sekta</Product>
-    <PackageProjectUrl>https://github.com/Gitii/sekta</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Gitii/sekta</RepositoryUrl>
-    <Nullable>enable</Nullable>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\key.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
+        <PackageReference Include="ModernWpfUI" Version="0.9.6" />
+        <PackageReference Include="ReactiveUI.Events.WPF" Version="15.1.1" />
+        <PackageReference Include="ReactiveUI.WPF" Version="18.4.26" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="4.6.97" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="ReactiveUI.Events.WPF" Version="15.1.1" />
-    <PackageReference Include="ReactiveUI.WPF" Version="16.3.10" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Sekta.Core\Sekta.Core.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Sekta.Core\Sekta.Core.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Windows\OMAViewer.xaml.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Presentation\ListboxPresentationView.xaml.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Presentation\TextPresentationView.xaml.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Presentation\TextboxPresentationView.xaml.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Presentation\DecimalTextboxPresentationView.xaml.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Presentation\DropdownPresentationView.xaml.cs">
+            <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Windows\OMAViewer.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Presentation\ListboxPresentationView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Presentation\TextPresentationView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Presentation\TextboxPresentationView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Presentation\DecimalTextboxPresentationView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Presentation\DropdownPresentationView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <Page Update="Windows\OMAViewer.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Presentation\ListboxPresentationView.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Presentation\TextPresentationView.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Presentation\TextboxPresentationView.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Presentation\DecimalTextboxPresentationView.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Update="Views\Presentation\DropdownPresentationView.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="Windows\OMAViewer.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\Presentation\ListboxPresentationView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\Presentation\TextPresentationView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\Presentation\TextboxPresentationView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\Presentation\DecimalTextboxPresentationView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\Presentation\DropdownPresentationView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="policy.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </Resource>
-  </ItemGroup>
-
+    <ItemGroup>
+        <Resource Include="policy.png">
+            <Pack>True</Pack>
+            <PackagePath />
+        </Resource>
+    </ItemGroup>
 </Project>

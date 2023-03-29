@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace Sekta.Admx.Schema
+namespace Sekta.Admx.Schema;
+
+public partial class CheckBox : DataElementContent
 {
-    public partial class CheckBox : DataElementContent
+    public CheckBox()
     {
-        public CheckBox()
-        {
-            DefaultChecked = false;
-        }
-
-        /// <remarks/>
-        [XmlAttribute("defaultChecked")]
-        [System.ComponentModel.DefaultValueAttribute(false)]
-        public bool DefaultChecked { get; set; }
-
-        [XmlAttribute("defaultValue")]
-        [System.ComponentModel.DefaultValueAttribute(false)]
-        public bool DefaultValue { get; set; }
+        DefaultChecked = false;
     }
+
+    /// <remarks/>
+    [XmlAttribute("defaultChecked")]
+    [System.ComponentModel.DefaultValueAttribute(false)]
+    public bool DefaultChecked { get; set; }
+
+    [XmlAttribute("defaultValue")]
+    [System.ComponentModel.DefaultValueAttribute(false)]
+    public bool DefaultValue { get; set; }
 }

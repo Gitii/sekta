@@ -12,19 +12,20 @@ using Sekta.Core.ModelView;
 using Sekta.Frontend.Wpf.IO;
 using Splat;
 
-namespace Sekta.Frontend.Wpf
-{
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
-    {
-        public App()
-        {
-            Locator.CurrentMutable.RegisterViewsForViewModels(Assembly.GetCallingAssembly());
-            Locator.CurrentMutable.RegisterViewsForViewModels(Assembly.GetAssembly(typeof(AppViewModel)));
+namespace Sekta.Frontend.Wpf;
 
-            Locator.CurrentMutable.RegisterConstant<IOService>(new WpfIOService());
-        }
+/// <summary>
+/// Interaction logic for App.xaml
+/// </summary>
+public partial class App : Application
+{
+    public App()
+    {
+        Locator.CurrentMutable.RegisterViewsForViewModels(Assembly.GetCallingAssembly());
+        Locator.CurrentMutable.RegisterViewsForViewModels(
+            Assembly.GetAssembly(typeof(AppViewModel))
+        );
+
+        Locator.CurrentMutable.RegisterConstant<IOService>(new WpfIOService());
     }
 }
