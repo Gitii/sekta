@@ -4,27 +4,15 @@ using System.Threading.Tasks;
 
 namespace Sekta.Core.IO;
 
-public readonly struct DialogFileFilter
-{
-    public readonly string[] Extensions;
-    public readonly string FileDescription;
-
-    public DialogFileFilter(string fileDescription, params string[] extensions)
-    {
-        Extensions = extensions;
-        FileDescription = fileDescription ?? string.Empty;
-    }
-}
-
 public interface IOService
 {
-    Task<string> SelectSingleOutputFile(params DialogFileFilter[] filters);
-    Task<string> SelectSingleInputFile(params DialogFileFilter[] filters);
-    Task<string[]> SelectMultipleInputFiles(params DialogFileFilter[] filters);
-    Task<bool> FileExists(params string[] files);
-    Task<bool> FileExists(IEnumerable<string> files);
-    Task<Stream> OpenFileRead(string filePath);
-    Task<Stream> CreateOrOpenFileWrite(string filePath);
-    Task<string[]> FindFiles(string directoryPath, string filter = null);
-    Task<Stream> CreateOrOverwriteFileWrite(string filePath);
+    Task<string> SelectSingleOutputFileAsync(params DialogFileFilter[] filters);
+    Task<string> SelectSingleInputFileAsync(params DialogFileFilter[] filters);
+    Task<string[]> SelectMultipleInputFilesAsync(params DialogFileFilter[] filters);
+    Task<bool> FileExistsAsync(params string[] files);
+    Task<bool> FileExistsAsync(IEnumerable<string> files);
+    Task<Stream> OpenFileReadAsync(string filePath);
+    Task<Stream> CreateOrOpenFileWriteAsync(string filePath);
+    Task<string[]> FindFilesAsync(string directoryPath, string filter = null);
+    Task<Stream> CreateOrOverwriteFileWriteAsync(string filePath);
 }

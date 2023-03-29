@@ -7,6 +7,7 @@ using ReactiveUI;
 using Sekta.Admx.Schema;
 using Sekta.Core.ModelView.Presentation;
 using Sekta.Core.Schema;
+#pragma warning disable MA0051
 
 namespace Sekta.Core.ModelView;
 
@@ -138,10 +139,10 @@ public class PolicyConfigurationModelView : ReactiveObject
             .ToProperty(this, (vm) => vm.ValidationText, out _validationText);
 
         ApplyChangesCommand = ReactiveCommand.CreateFromTask(
-            ApplyChanges,
+            ApplyChangesAsync,
             this.WhenAnyValue((vm) => vm.AreElementsAllValid)
         );
-        RevertChangesCommand = ReactiveCommand.CreateFromTask(RevertChanges);
+        RevertChangesCommand = ReactiveCommand.CreateFromTask(RevertChangesAsync);
         _configuredPolicy = configuredPolicy;
 
         this.WhenAny((vm) => vm.CurrentResources, (x) => x.Value)
@@ -189,7 +190,7 @@ public class PolicyConfigurationModelView : ReactiveObject
     public PolicyPresentation Presentation => _presentation;
     public BasePresentationModeView[] PresentationElements => _presentationElements;
 
-    private async Task ApplyChanges()
+    private async Task ApplyChangesAsync()
     {
         _configuredPolicy.Values.Clear();
 
@@ -295,7 +296,7 @@ public class PolicyConfigurationModelView : ReactiveObject
         }
     }
 
-    private Task RevertChanges()
+    private Task RevertChangesAsync()
     {
         IsDataChanged = false;
         IsEnabled = _configuredPolicy.IsEnabled;

@@ -8,24 +8,9 @@ using ReactiveUI;
 using Sekta.Admx.Schema;
 using Sekta.Core.ModelView.Presentation;
 using Sekta.Core.Schema;
+#pragma warning disable MA0051
 
 namespace Sekta.Core.ModelView.Intune;
-
-public readonly struct OMAEntryValue
-{
-    public string Name { get; }
-    public string Description { get; }
-    public string Uri { get; }
-    public string Value { get; }
-
-    public OMAEntryValue(string name, string description, string uri, string value)
-    {
-        Name = name ?? throw new ArgumentNullException(nameof(name));
-        Description = description ?? throw new ArgumentNullException(nameof(description));
-        Uri = uri ?? throw new ArgumentNullException(nameof(uri));
-        Value = value ?? throw new ArgumentNullException(nameof(value));
-    }
-}
 
 public class OMAModelView : ReactiveObject
 {
@@ -85,7 +70,7 @@ public class OMAModelView : ReactiveObject
                                                     new XAttribute(
                                                         "value",
                                                         string.Join(
-                                                            char.ConvertFromUtf32(61440).ToString(),
+                                                            char.ConvertFromUtf32(61440),
                                                             v.ElementValue.KeyValueList.SelectMany(
                                                                 (kv) =>
                                                                     new string[]

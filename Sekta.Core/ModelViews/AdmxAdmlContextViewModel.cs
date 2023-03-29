@@ -60,12 +60,12 @@ public class AdmxAdmlContextViewModel : ReactiveObject
             .Bind(out _admlFilePaths)
             .Subscribe();
 
-        SelectAdmxFileCommand = ReactiveCommand.CreateFromTask(SelectAdmxFile);
+        SelectAdmxFileCommand = ReactiveCommand.CreateFromTask(SelectAdmxFileAsync);
 
-        SelectMoreAdmlFilesCommand = ReactiveCommand.CreateFromTask(AddAdmlFile);
+        SelectMoreAdmlFilesCommand = ReactiveCommand.CreateFromTask(AddAdmlFileAsync);
 
         RemoveSelectedAdmlFileCommand = ReactiveCommand.CreateFromTask(
-            RemoveSelectedAdmlFile,
+            RemoveSelectedAdmlFileAsync,
             this.WhenAny((vm) => vm.AdmxFilePath, (path) => !string.IsNullOrEmpty(path.Value))
         );
 
@@ -76,13 +76,13 @@ public class AdmxAdmlContextViewModel : ReactiveObject
         AutoAddAdmlFiles = true;
     }
 
-    private async Task SelectAdmxFile()
+    private async Task SelectAdmxFileAsync()
     {
         IOService service = Locator.Current.GetService<IOService>();
 
-        var filePath = await service.SelectSingleInputFile(
-            new DialogFileFilter("Schema Definition File", "*.admx")
-        );
+        var filePath = await service
+            .SelectSingleInputFileAsync(new DialogFileFilter("Schema Definition File", "*.admx"))
+            .ConfigureAwait(false);
         if (filePath != null)
         {
             AdmxFilePath = filePath;
@@ -93,10 +93,9 @@ public class AdmxAdmlContextViewModel : ReactiveObject
                 var expectedFileName = Path.GetFileNameWithoutExtension(filePath) + ".adml";
 
                 foreach (
-                    string file in await service.FindFiles(
-                        Path.GetDirectoryName(AdmxFilePath),
-                        expectedFileName
-                    )
+                    string file in await service
+                        .FindFilesAsync(Path.GetDirectoryName(AdmxFilePath), expectedFileName)
+                        .ConfigureAwait(false)
                 )
                 {
                     _admlFilePathList.Add(file);
@@ -105,17 +104,17 @@ public class AdmxAdmlContextViewModel : ReactiveObject
         }
     }
 
-    private async Task AddAdmlFile()
+    private async Task AddAdmlFileAsync()
     {
         IOService service = Locator.Current.GetService<IOService>();
 
-        var files = await service.SelectMultipleInputFiles(
-            new DialogFileFilter("Schema Resource File", "*.adml")
-        );
+        var files = await service
+            .SelectMultipleInputFilesAsync(new DialogFileFilter("Schema Resource File", "*.adml"))
+            .ConfigureAwait(false);
         _admlFilePathList.AddRange(files.Except(_admlFilePathList.Items).Distinct());
     }
 
-    private async Task RemoveSelectedAdmlFile()
+    private async Task RemoveSelectedAdmlFileAsync()
     {
         if (SelectedAdmlFilePath != null)
         {

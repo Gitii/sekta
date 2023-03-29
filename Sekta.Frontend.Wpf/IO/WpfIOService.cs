@@ -11,7 +11,7 @@ namespace Sekta.Frontend.Wpf.IO;
 
 public class WpfIOService : IOService
 {
-    public async Task<string> SelectSingleOutputFile(params DialogFileFilter[] filters)
+    public async Task<string> SelectSingleOutputFileAsync(params DialogFileFilter[] filters)
     {
         var sfd = new SaveFileDialog()
         {
@@ -33,7 +33,7 @@ public class WpfIOService : IOService
         }
     }
 
-    public async Task<string> SelectSingleInputFile(params DialogFileFilter[] filters)
+    public async Task<string> SelectSingleInputFileAsync(params DialogFileFilter[] filters)
     {
         OpenFileDialog ofd = new OpenFileDialog()
         {
@@ -55,7 +55,7 @@ public class WpfIOService : IOService
         }
     }
 
-    public async Task<string[]> SelectMultipleInputFiles(params DialogFileFilter[] filters)
+    public async Task<string[]> SelectMultipleInputFilesAsync(params DialogFileFilter[] filters)
     {
         OpenFileDialog ofd = new OpenFileDialog()
         {
@@ -77,12 +77,12 @@ public class WpfIOService : IOService
         }
     }
 
-    public Task<bool> FileExists(params string[] files)
+    public Task<bool> FileExistsAsync(params string[] files)
     {
-        return FileExists((IEnumerable<string>)files);
+        return FileExistsAsync((IEnumerable<string>)files);
     }
 
-    public async Task<bool> FileExists(IEnumerable<string> files)
+    public async Task<bool> FileExistsAsync(IEnumerable<string> files)
     {
         foreach (string file in files)
         {
@@ -95,22 +95,22 @@ public class WpfIOService : IOService
         return true;
     }
 
-    public async Task<Stream> OpenFileRead(string filePath)
+    public async Task<Stream> OpenFileReadAsync(string filePath)
     {
         return File.OpenRead(filePath);
     }
 
-    public async Task<Stream> CreateOrOpenFileWrite(string filePath)
+    public async Task<Stream> CreateOrOpenFileWriteAsync(string filePath)
     {
         return File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
     }
 
-    public async Task<Stream> CreateOrOverwriteFileWrite(string filePath)
+    public async Task<Stream> CreateOrOverwriteFileWriteAsync(string filePath)
     {
         return File.Open(filePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
     }
 
-    public async Task<string[]> FindFiles(string directoryPath, string filter = null)
+    public async Task<string[]> FindFilesAsync(string directoryPath, string filter = null)
     {
         return Directory
             .EnumerateFiles(directoryPath, filter, SearchOption.AllDirectories)

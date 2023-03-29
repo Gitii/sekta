@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml.Serialization;
+#pragma warning disable CA1823
 
 namespace Sekta.Admx.Schema;
 

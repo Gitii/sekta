@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using System.Windows;
 using ReactiveUI;
 using Sekta.Core.ModelView;
+#pragma warning disable MA0051
 
 namespace Sekta.Frontend.Wpf.Views;
 

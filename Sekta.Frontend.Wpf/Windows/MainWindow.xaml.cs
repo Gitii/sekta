@@ -12,6 +12,7 @@ using Sekta.Admx.Schema;
 using Sekta.Core;
 using Sekta.Core.ModelView;
 using Sekta.Frontend.Wpf.ModelViews;
+#pragma warning disable MA0051
 
 namespace Sekta.Frontend.Wpf.Windows;
 

@@ -1,23 +1,39 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net6.0</TargetFrameworks>
+        <Platforms>x64;x86;arm64</Platforms>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+        <LangVersion>latest</LangVersion>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|x64'">
+      <NoWarn>1701;1702;CS0169</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|x64'">
+      <NoWarn>1701;1702;CS0169</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|x86'">
+      <NoWarn>1701;1702;CS0169</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|x86'">
+      <NoWarn>1701;1702;CS0169</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|arm64'">
+      <NoWarn>1701;1702;CS0169</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|arm64'">
+      <NoWarn>1701;1702;CS0169</NoWarn>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-    <Platforms>x64;x86;arm64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <ItemGroup>
+        <None Remove="PolicyDefinitionFiles.xsd" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="PolicyDefinitionFiles.xsd" />
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="PolicyDefinitionFiles.xsd" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="PolicyDefinitionFiles.xsd" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
-  </ItemGroup>
-
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
+    </ItemGroup>
 </Project>

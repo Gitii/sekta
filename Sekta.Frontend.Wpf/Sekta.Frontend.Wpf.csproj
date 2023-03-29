@@ -20,7 +20,7 @@
         <Product>Sekta</Product>
         <PackageProjectUrl>https://github.com/Gitii/sekta</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Gitii/sekta</RepositoryUrl>
-        <Nullable>enable</Nullable>
+        <Nullable>disable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
 

@@ -14,20 +14,9 @@ using Sekta.Core.IO;
 using Sekta.Core.ModelView.Presentation;
 using Sekta.Core.Schema;
 using Splat;
+#pragma warning disable MA0051
 
 namespace Sekta.Core.ModelView;
-
-public readonly struct AdmxAndAdmlFiles
-{
-    public readonly string AdmxFilePath;
-    public readonly string[] AdmlFilePaths;
-
-    public AdmxAndAdmlFiles(string admxFilePath, IEnumerable<string> admlFilePaths)
-    {
-        AdmxFilePath = admxFilePath;
-        AdmlFilePaths = admlFilePaths.ToArray();
-    }
-}
 
 public class AppViewModel : ReactiveObject
 {
@@ -168,15 +157,15 @@ public class AppViewModel : ReactiveObject
         );
 
         LoadConfigurationCommand = ReactiveCommand.CreateFromTask(
-            LoadConfiguration,
+            LoadConfigurationAsync,
             isConfigurationReady
         );
         SaveConfigurationCommand = ReactiveCommand.CreateFromTask(
-            SaveConfiguration,
+            SaveConfigurationAsync,
             isConfigurationReady
         );
         ExportConfigurationCommand = ReactiveCommand.CreateFromTask(
-            ExportConfiguration,
+            ExportConfigurationAsync,
             isConfigurationReady
         );
     }
@@ -238,9 +227,9 @@ public class AppViewModel : ReactiveObject
         IOService service = Locator.Current.GetService<IOService>();
 
         if (
-            await service.FileExists(
-                files.AdmlFilePaths.Concat(new string[] { files.AdmxFilePath })
-            )
+            await service
+                .FileExistsAsync(files.AdmlFilePaths.Concat(new string[] { files.AdmxFilePath }))
+                .ConfigureAwait(false)
         )
         {
             List<PolicyDefinitionResources> resources = new List<PolicyDefinitionResources>();
@@ -250,9 +239,11 @@ public class AppViewModel : ReactiveObject
             foreach (string admlFilePath in files.AdmlFilePaths)
             {
                 (PolicyDefinitionResources admlRes, DeserializationLog admlLog) =
-                    await PolicyDefinitionResources.DeserializeAsync(
-                        await service.OpenFileRead(admlFilePath)
-                    );
+                    await PolicyDefinitionResources
+                        .DeserializeAsync(
+                            await service.OpenFileReadAsync(admlFilePath).ConfigureAwait(false)
+                        )
+                        .ConfigureAwait(false);
 
                 string dirName = Path.GetFileName(Path.GetDirectoryName(admlFilePath));
                 var culture = dirName != null ? CultureInfo.GetCultureInfo(dirName) : null;
@@ -265,9 +256,11 @@ public class AppViewModel : ReactiveObject
             }
 
             (PolicyDefinitions admxDef, DeserializationLog admxLog) =
-                await Admx.Schema.PolicyDefinitions.DeserializeAsync(
-                    await service.OpenFileRead(files.AdmxFilePath)
-                );
+                await Admx.Schema.PolicyDefinitions
+                    .DeserializeAsync(
+                        await service.OpenFileReadAsync(files.AdmxFilePath).ConfigureAwait(false)
+                    )
+                    .ConfigureAwait(false);
 
             ValidateAdmx(admxDef, admxLog);
 
@@ -280,10 +273,14 @@ public class AppViewModel : ReactiveObject
 
             _configuredPolicyList.Clear();
 
-            using (var admxFileStream = await service.OpenFileRead(files.AdmxFilePath))
+            using (
+                var admxFileStream = await service
+                    .OpenFileReadAsync(files.AdmxFilePath)
+                    .ConfigureAwait(false)
+            )
             using (var reader = new StreamReader(admxFileStream))
             {
-                PolicyDefinitionsContent = reader.ReadToEnd();
+                PolicyDefinitionsContent = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
         }
     }
@@ -370,20 +367,28 @@ public class AppViewModel : ReactiveObject
         }
     }
 
-    private async Task LoadConfiguration()
+    private async Task LoadConfigurationAsync()
     {
         IOService service = Locator.Current.GetService<IOService>();
 
-        var selectedFilePath = await service.SelectSingleInputFile(
-            new DialogFileFilter("Policy configuration (*.policy.json)", "*.policy.json")
-        );
+        var selectedFilePath = await service
+            .SelectSingleInputFileAsync(
+                new DialogFileFilter("Policy configuration (*.policy.json)", "*.policy.json")
+            )
+            .ConfigureAwait(false);
 
         if (selectedFilePath != null)
         {
-            using (Stream file = await service.OpenFileRead(selectedFilePath))
+            using (
+                Stream file = await service
+                    .OpenFileReadAsync(selectedFilePath)
+                    .ConfigureAwait(false)
+            )
             using (StreamReader reader = new StreamReader(file))
             {
-                var policies = ConfiguredPolicy.Deserialize(reader.ReadToEnd());
+                var policies = ConfiguredPolicy.Deserialize(
+                    await reader.ReadToEndAsync().ConfigureAwait(false)
+                );
 
                 _configuredPolicyList.Edit(
                     (innerList) =>
@@ -396,39 +401,49 @@ public class AppViewModel : ReactiveObject
         }
     }
 
-    private async Task SaveConfiguration()
+    private async Task SaveConfigurationAsync()
     {
         IOService service = Locator.Current.GetService<IOService>();
 
-        var selectedFilePath = await service.SelectSingleOutputFile(
-            new DialogFileFilter("Policy configuration (*.policy.json)", "*.policy.json")
-        );
+        var selectedFilePath = await service
+            .SelectSingleOutputFileAsync(
+                new DialogFileFilter("Policy configuration (*.policy.json)", "*.policy.json")
+            )
+            .ConfigureAwait(false);
 
         if (selectedFilePath != null)
         {
-            using (Stream file = await service.CreateOrOverwriteFileWrite(selectedFilePath))
+            using (
+                Stream file = await service
+                    .CreateOrOverwriteFileWriteAsync(selectedFilePath)
+                    .ConfigureAwait(false)
+            )
             using (StreamWriter writer = new StreamWriter(file))
             {
                 var strPolicyList = ConfiguredPolicy.Serialize(ConfiguredPolicies);
 
-                writer.Write(strPolicyList);
+                await writer.WriteAsync(strPolicyList).ConfigureAwait(false);
 
                 writer.Close();
             }
         }
     }
 
-    private async Task ExportConfiguration()
+    private async Task ExportConfigurationAsync()
     {
         IOService service = Locator.Current.GetService<IOService>();
 
-        var selectedFilePath = await service.SelectSingleOutputFile(
-            new DialogFileFilter("Powershell script (*.ps1)", "*.ps1")
-        );
+        var selectedFilePath = await service
+            .SelectSingleOutputFileAsync(new DialogFileFilter("Powershell script (*.ps1)", "*.ps1"))
+            .ConfigureAwait(false);
 
         if (selectedFilePath != null)
         {
-            using (Stream file = await service.CreateOrOverwriteFileWrite(selectedFilePath))
+            using (
+                Stream file = await service
+                    .CreateOrOverwriteFileWriteAsync(selectedFilePath)
+                    .ConfigureAwait(false)
+            )
             using (StreamWriter writer = new StreamWriter(file))
             {
                 foreach (
@@ -437,9 +452,15 @@ public class AppViewModel : ReactiveObject
                         .OrderBy((cp) => cp.PolicyDefinitionName)
                 )
                 {
-                    await writer.WriteLineAsync("# Policy : " + policy.PolicyDefinitionName);
-                    await writer.WriteLineAsync("# Enabled: " + policy.IsEnabled);
-                    await writer.WriteLineAsync("# =========================================");
+                    await writer
+                        .WriteLineAsync("# Policy : " + policy.PolicyDefinitionName)
+                        .ConfigureAwait(false);
+                    await writer
+                        .WriteLineAsync("# Enabled: " + policy.IsEnabled)
+                        .ConfigureAwait(false);
+                    await writer
+                        .WriteLineAsync("# =========================================")
+                        .ConfigureAwait(false);
 
                     string[] classNames;
                     switch (policy.PolicyClass)
@@ -459,8 +480,12 @@ public class AppViewModel : ReactiveObject
 
                     foreach (string className in classNames)
                     {
-                        await writer.WriteLineAsync("# Class: " + policy.PolicyClass);
-                        await writer.WriteLineAsync("# -----------------------------------------");
+                        await writer
+                            .WriteLineAsync("# Class: " + policy.PolicyClass)
+                            .ConfigureAwait(false);
+                        await writer
+                            .WriteLineAsync("# -----------------------------------------")
+                            .ConfigureAwait(false);
 
                         foreach (
                             ConfiguredPolicyOption option in policy.Values.OrderBy(
@@ -468,10 +493,14 @@ public class AppViewModel : ReactiveObject
                             )
                         )
                         {
-                            await writer.WriteLineAsync("# Option: " + option.ElementId);
-                            await writer.WriteLineAsync(
-                                $"New-Item -Path '{className}:\\{option.ElementValue.Path}' -Force | Out-Null"
-                            );
+                            await writer
+                                .WriteLineAsync("# Option: " + option.ElementId)
+                                .ConfigureAwait(false);
+                            await writer
+                                .WriteLineAsync(
+                                    $"New-Item -Path '{className}:\\{option.ElementValue.Path}' -Force | Out-Null"
+                                )
+                                .ConfigureAwait(false);
                             if (option.ElementValue.KeyValueList != null)
                             {
                                 foreach (
@@ -480,30 +509,36 @@ public class AppViewModel : ReactiveObject
                                         .KeyValueList
                                 )
                                 {
-                                    await writer.WriteLineAsync(
-                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{pair.Key}' -Value '{pair.Value}' -PropertyType String -Force | Out-Null"
-                                    );
+                                    await writer
+                                        .WriteLineAsync(
+                                            $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{pair.Key}' -Value '{pair.Value}' -PropertyType String -Force | Out-Null"
+                                        )
+                                        .ConfigureAwait(false);
                                 }
                             }
                             else if (option.ElementValue.KeyValueString != null)
                             {
-                                await writer.WriteLineAsync(
-                                    $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value '{option.ElementValue.KeyValueString}' -PropertyType String -Force | Out-Null"
-                                );
+                                await writer
+                                    .WriteLineAsync(
+                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value '{option.ElementValue.KeyValueString}' -PropertyType String -Force | Out-Null"
+                                    )
+                                    .ConfigureAwait(false);
                             }
                             else if (option.ElementValue.KeyValueUSignedInteger.HasValue)
                             {
-                                await writer.WriteLineAsync(
-                                    $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value {option.ElementValue.KeyValueUSignedInteger} -PropertyType DWord -Force | Out-Null"
-                                );
+                                await writer
+                                    .WriteLineAsync(
+                                        $"Set-ItemProperty -Path '{className}:\\{option.ElementValue.Path}' -Name '{option.ElementValue.KeyName}' -Value {option.ElementValue.KeyValueUSignedInteger} -PropertyType DWord -Force | Out-Null"
+                                    )
+                                    .ConfigureAwait(false);
                             }
 
-                            await writer.WriteLineAsync();
+                            await writer.WriteLineAsync().ConfigureAwait(false);
                         }
                     }
 
-                    await writer.WriteLineAsync();
-                    await writer.WriteLineAsync();
+                    await writer.WriteLineAsync().ConfigureAwait(false);
+                    await writer.WriteLineAsync().ConfigureAwait(false);
                 }
 
                 writer.Close();

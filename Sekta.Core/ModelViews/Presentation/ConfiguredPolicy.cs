@@ -6,6 +6,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using ReactiveUI;
 using Sekta.Admx.Schema;
+#pragma warning disable MA0051
 
 namespace Sekta.Core.ModelView.Presentation;
 

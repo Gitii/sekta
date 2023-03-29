@@ -9,7 +9,7 @@
   <Identity
     Name="56395Gitii.Sekta"
     Publisher="CN=A9134821-5FAD-42C9-A538-BB11394F8155"
-    Version="1.1.15.0" />
+    Version="0.7.17.0" />
 
   <Properties>
     <DisplayName>Sekta</DisplayName>

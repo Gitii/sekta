@@ -135,7 +135,8 @@ public partial class PolicyDefinitions
 
             var reader = XmlReader.Create(s, readerSettings);
 
-            await Task.Run(() => defs = (PolicyDefinitions)Serializer.Deserialize(reader));
+            await Task.Run(() => defs = (PolicyDefinitions)Serializer.Deserialize(reader))
+                .ConfigureAwait(false);
         }
         catch (Exception e)
         {

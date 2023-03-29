@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sekta.Admx.Schema;
 
@@ -30,7 +31,7 @@ public class AdmxCategory
     {
         if (_parent == null)
         {
-            return IsStub ? new AdmxCategory[0] : new[] { this };
+            return IsStub ? Array.Empty<AdmxCategory>() : new[] { this };
         }
         else if (IsStub)
         {
@@ -51,7 +52,9 @@ public class AdmxCategory
         _children = new List<AdmxCategory>();
     }
 
+#pragma warning disable MA0051
     public static List<AdmxCategory> From(List<Category> rawCategoryList)
+#pragma warning restore MA0051
     {
         List<AdmxCategory> rootCategories = new List<AdmxCategory>(
             rawCategoryList
