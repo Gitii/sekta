@@ -1,3 +1,9 @@
+> [!IMPORTANT]  
+> I have decided to archive this repository because it seems that newer (and potentionally other third-party schemas) are no longer working. Or maybe never have.
+> The whole program is build around `XMlSerializer` which is notorius and frustrating.
+> I have no time and energy to rewrite the code base or debug the `XMlSerializer`.
+
+
 ![Sekta](Assets/screenshot.png)
 
 <div align='center'>
